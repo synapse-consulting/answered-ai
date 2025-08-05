@@ -35,7 +35,6 @@ RUN npm install && npm run build
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 755 /var/www/storage
 
-# Expose port (used by PHP-FPM)
-EXPOSE 9000
+EXPOSE 8000
 
 CMD ["php-fpm"]
