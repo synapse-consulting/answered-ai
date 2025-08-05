@@ -1,7 +1,10 @@
-FROM php:8.1-fpm
+FROM php:8.1-apache
 
 # Set working directory
-WORKDIR /var/www
+WORKDIR /var/www/html
+
+# Enable Apache mod_rewrite (needed for Laravel routes)
+RUN a2enmod rewrite
 
 # Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y \
@@ -22,7 +25,7 @@ RUN apt-get update && apt-get install -y \
 # Install Composer
 COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
 
-# Copy app code
+# Copy Laravel app files to Apache root
 COPY . .
 
 # Install Laravel dependencies
@@ -31,10 +34,12 @@ RUN composer install --no-interaction --prefer-dist
 # (Optional) Build frontend assets with Vite
 RUN npm install && npm run build
 
-# Set proper permissions
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage
+# Set correct permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage
 
-EXPOSE 8000
+# Expose Apache port
+EXPOSE 80
 
-CMD ["php-fpm"]
+# Start Apache
+CMD ["apache2-foreground"]
