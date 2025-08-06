@@ -21,8 +21,9 @@ use App\Http\Controllers\HomeController;
 |
 */
 
-
-Route::redirect('/', '/login'); 
+Route::get('/', function () {
+    return redirect(url('/login'));
+});
 
 Auth::routes(); 
 
