@@ -37,8 +37,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/chat', [ChatController::class, 'index'])->name('chat');
         Route::get('/chats/{id}', [ChatController::class, 'getMessages'])->name('chats');
         Route::get('/profile', [UserController::class, 'profile'])->name('profile');
-        
     });
+    
     Route::group(['prefix' => 'meta'], function () {
         Route::get('/', [DashboardController::class, 'meta'])->name('meta.integration');
         Route::get('/whatsapp-integration', [MetaIntegrationController::class, 'redirectToMeta'])->name('whatsapp.integration');

@@ -19,6 +19,10 @@ Alpine.plugin(persist);
 window.Alpine = Alpine;
 Alpine.start();
 
+const appUrl = document.querySelector('meta[name="app-url"]')?.getAttribute('content');
+window.appUrl = appUrl;
+
+
 // Init flatpickr
 flatpickr(".datepicker", {
   mode: "range",
@@ -55,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
   donutChart();
   chart03();
   map01();
-
+  
 });
 
 // Get the current year
@@ -114,3 +118,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+
+
+
