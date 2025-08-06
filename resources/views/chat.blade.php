@@ -318,7 +318,9 @@
 
             loadMessages() {
                 if (!this.selectedContactId) return;
-                fetch(`/chats/${this.selectedContactId}`)
+                let baseUrl = document.querySelector('meta[name="app-url"]')?.getAttribute('content');
+
+                fetch(baseUrl + `/chats/${this.selectedContactId}`)
                     .then(res => res.json())
                     .then(data => {
                         this.messages = data.chats;
