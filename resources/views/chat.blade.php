@@ -314,12 +314,11 @@
             selectContact(id) {
                 this.selectedContactId = id;
                 this.loadMessages();
-                console.log(window.appUrl)
             },
 
             loadMessages() {
                 if (!this.selectedContactId) return;
-                fetch(window.appUrl + `/chats/${this.selectedContactId}`)
+                fetch(`/chats/${this.selectedContactId}`)
                     .then(res => res.json())
                     .then(data => {
                         this.messages = data.chats;
