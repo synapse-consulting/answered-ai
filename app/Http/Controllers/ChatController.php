@@ -6,7 +6,7 @@ use App\Models\CompanyApp;
 use App\Models\CompanyContact;
 use Illuminate\Http\Request;
 use App\Models\Chat;
-use App\Models\Contact;
+use App\Services\ChatService;
 
 class ChatController extends Controller
 {
@@ -39,28 +39,7 @@ class ChatController extends Controller
     }
 
     function composeMessage(Request $request){
-        $toNumber = $request->to_number; 
-        $fromNumber = $request->from_number; 
-        $bussinessWhatsappId = $request->business_whatsapp_id; 
-        $messageId = $request->messageId; 
-        $phoneNumberId = $request->phoneNumberId; 
-        $messageType = $request->message_type;
-        $messageText = $request->message_text; 
-        
-        $companyApp = CompanyApp::where('whatsapp_business_id', $bussinessWhatsappId)->first(); 
-        $contact = Contact::where('phone_number', $toNumber)->first();
-            
-        return Chat::create([
-            'contact_id'       => $contact->id,
-            'company_id'       => $companyApp->company_id,
-            'message_id'       => $messageId,
-            'phone_number_id'  => $phoneNumberId,
-            'from_number'      => $fromNumber,
-            'to_number'        => $toPhoneNumber ?? null,
-            'direction'        => 'inbound',
-            'message_type'     => $messageType,
-            'message_text'     => $messageText,
-            'status'           => 'received',
-        ]);
+        app(ChatService::class)->composeMessage($request); 
+        return response()->json('Chat created succcessfully');
     }
 }
