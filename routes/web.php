@@ -21,6 +21,7 @@ use App\Http\Controllers\HomeController;
 |
 */
 
+
 Route::get('/', function () {
     return redirect(url('/login'));
 });
@@ -32,6 +33,9 @@ Route::post('/webhook', [MetaIntegrationController::class, 'webhookPost'])->name
 
 Route::middleware(['auth'])->group(function () {
     
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
+    Route::get('/workflow', [HomeController::class, 'workflow'])->name('workflow');
+
     Route::middleware(['verify_meta'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/chat', [ChatController::class, 'index'])->name('chat');
@@ -45,5 +49,3 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/whatsapp-callback', [MetaIntegrationController::class, 'handleMetaCallback'])->name('whatsapp.callback');
     });
 });
-
-Route::get('/home', [HomeController::class, 'index'])->name('home');
