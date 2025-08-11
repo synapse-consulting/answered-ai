@@ -6,7 +6,7 @@
     @viteReactRefresh
     @vite('resources/js/app.tsx')
 </head>
-<body>
+<body style="margin:0px;">
     <div id="react-root"></div>
 </body>
 </html>
