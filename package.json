@@ -28,6 +28,8 @@
         "@fullcalendar/interaction": "^6.1.15",
         "@fullcalendar/list": "^6.1.15",
         "@fullcalendar/timegrid": "^6.1.15",
+        "@headlessui/react": "^2.2.7",
+        "@heroicons/react": "^2.2.0",
         "@tailwindcss/vite": "^4.1.11",
         "@xyflow/react": "^12.8.2",
         "alpinejs": "^3.14.1",
