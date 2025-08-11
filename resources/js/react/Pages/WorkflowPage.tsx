@@ -14,7 +14,6 @@ import "reactflow/dist/style.css";
 import Sidebar from "../components/Sidebar";
 import CustomNode from "../components/CustomNode";
 import HttpRequestModal from "../components/HttpRequestModal";
-import { Dialog } from "@headlessui/react";
 
 let nodeId = 1;
 

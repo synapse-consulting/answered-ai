@@ -1,5 +1,5 @@
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import DialogContainer from "./DialogContainer";
+import DialogContainer from "../components/DialogContainer";
 import React, { useState } from "react";
 
 interface QueryParam {

@@ -117,6 +117,5 @@ export default function DialogContainer({
 
   // Use dedicated modal root if available, otherwise fall back to document body
   const modalRoot = document.getElementById("modal-root") || document.body;
-  console.log("🍪 DIALOGCONTAINER.TSX ==> Tag", modalRoot);
   return createPortal(modalContent, modalRoot);
 }
