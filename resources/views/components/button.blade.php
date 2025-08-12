@@ -18,7 +18,7 @@
                 break;
 
             case 'btn-danger':
-                $btnTypeClass = 'btn bg-danger-600 hover:bg-danger-700 text-white'; 
+                $btnTypeClass = 'btn bg-red-600 hover:bg-red-700 text-white'; 
                 break;
 
             case 'btn-secondary':
@@ -69,7 +69,7 @@
         <a 
             href="{{ $href }}"
             @if($title) title="{{ $title }}" @endif
-            {{ $attributes->merge(['class' => "inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg shadow-theme-xs $btnTypeClass $class"]) }}
+            {{ $attributes->merge(['class' => "inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white transition rounded-lg shadow-theme-xs $btnTypeClass $class"]) }}
         >
             {!! $slot !!}
         </a>

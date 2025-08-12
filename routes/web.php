@@ -7,9 +7,8 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\MetaIntegrationController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\HomeController;
-
-
-
+use App\Http\Controllers\WorkflowController;
+use App\Http\Controllers\IntentController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -34,13 +33,15 @@ Route::post('/webhook', [MetaIntegrationController::class, 'webhookPost'])->name
 Route::middleware(['auth'])->group(function () {
     
     Route::get('/home', [HomeController::class, 'index'])->name('home');
-    Route::get('/workflow', [HomeController::class, 'workflow'])->name('workflow');
 
     Route::middleware(['verify_meta'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/chat', [ChatController::class, 'index'])->name('chat');
         Route::get('/chats/{id}', [ChatController::class, 'getMessages'])->name('chats');
         Route::get('/profile', [UserController::class, 'profile'])->name('profile');
+
+        Route::resource('workflows', WorkflowController::class);
+        Route::resource('intents', IntentController::class);
     });
     
     Route::group(['prefix' => 'meta'], function () {

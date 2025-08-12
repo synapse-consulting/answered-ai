@@ -140,12 +140,8 @@ export default function WorkflowBuilder() {
     };
   };
 
-  const saveWorkflow = () => {
+  const saveWorkflow = async () =>  {
     const workflow = createMergedWorkflow();
-
-    console.log("ninaodsnufoasnudofasnonu", workflow);
-
-    // Example: Log detailed connection info for each node
     workflow.nodes.forEach((node) => {
       if (node.connections.count.total > 0) {
         console.log(`📋 Node "${node.data.label}" (${node.id}) has:`, {
@@ -160,10 +156,41 @@ export default function WorkflowBuilder() {
       }
     });
 
-    // Show a simple notification
     alert(
       `Workflow saved! ${workflow.metadata.totalNodes} nodes, ${workflow.metadata.totalConnections} connections`,
     );
+
+    try {
+    const response = await fetch('/workflows/store', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN':
+            document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        },
+        body: JSON.stringify({
+          workflow: workflow,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.workflow) {
+        alert(
+          `Workflow saved successfully! ${workflow.metadata.totalNodes} nodes, ${workflow.metadata.totalConnections} connections`
+        );
+      }
+    } catch (error) {
+      console.error('Error saving workflow:', error);
+      alert('Failed to save workflow. Please try again.');
+    }
+
+
+  
   };
 
   return (
