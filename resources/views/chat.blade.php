@@ -226,7 +226,7 @@
                                         class="inline-block rounded-lg px-3 py-2 max-w-[350px]">
                                         <p class="text-sm" x-text="message.message_text"></p>
                                     </div>
-                                    <p class="mt-1 text-xs text-gray-500" x-text="timeAgo(message.timestamp)"></p>
+                                    <p class="mt-1 text-xs text-gray-500" x-text="timeAgo(message.created_at)"></p>
                                 </div>
                             </template>
                         </div>

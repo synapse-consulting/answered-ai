@@ -27,7 +27,7 @@ class ChatController extends Controller
     public function getMessages(Request $request, $contactId)
     {
         $chats = Chat::where('contact_id', $contactId)
-            ->latest()
+            ->oldest()
             ->get();
 
         $contact = CompanyContact::with('contact')->where('contact_id', $contactId)->first(); 
