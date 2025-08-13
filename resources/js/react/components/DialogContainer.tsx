@@ -1,25 +1,24 @@
-import React, { Fragment, ReactNode } from "react";
-import { Dialog, Transition } from "@headlessui/react";
+import React, { useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { createPortal } from "react-dom";
 
-interface DialogContainerProps {
+const maxWidthClasses = {
+  sm: "max-w-sm",
+  md: "max-w-md",
+  lg: "max-w-lg",
+  xl: "max-w-xl",
+  "2xl": "max-w-2xl",
+};
+
+interface Props {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
   description?: string;
-  children: ReactNode;
-  maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl";
+  children: React.ReactNode;
+  maxWidth?: keyof typeof maxWidthClasses;
   showCloseButton?: boolean;
 }
-
-const maxWidthClasses = {
-  sm: "sm:max-w-sm",
-  md: "sm:max-w-md",
-  lg: "sm:max-w-lg",
-  xl: "sm:max-w-xl",
-  "2xl": "sm:max-w-2xl",
-};
 
 export default function DialogContainer({
   isOpen,
@@ -29,77 +28,68 @@ export default function DialogContainer({
   children,
   maxWidth = "2xl",
   showCloseButton = true,
-}: DialogContainerProps) {
-  // If modal is not open, don't render anything
+}: Props) {
+  // Handle escape key press
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("keydown", handleEscape);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const modalContent = (
-    <div
-      className="fixed inset-0 z-[9999] overflow-y-auto"
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 9999,
-      }}>
+    <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50"
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: "rgba(0, 0, 0, 0.5)",
-        }}
+        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-300"
         onClick={onClose}
+        aria-hidden="true"
       />
 
       {/* Modal Content */}
-      <div
-        className="flex min-h-full items-center justify-center p-4"
-        style={{
-          display: "flex",
-          minHeight: "100vh",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "1rem",
-          position: "relative",
-          zIndex: 1,
-        }}>
+      <div className="flex min-h-full items-center justify-center p-4">
         <div
-          className="relative transform overflow-hidden rounded-lg bg-white shadow-xl transition-all w-full max-w-2xl"
-          style={{
-            backgroundColor: "white",
-            borderRadius: "0.5rem",
-            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-            width: "100%",
-            maxWidth: "42rem",
-            position: "relative",
-          }}
+          className={`relative transform overflow-hidden rounded-xl bg-white dark:bg-gray-800 
+            shadow-2xl transition-all duration-300 w-full ${maxWidthClasses[maxWidth]} 
+            animate-in zoom-in-95 fade-in duration-300`}
           onClick={(e) => e.stopPropagation()}>
           {/* Header */}
           {(title || description || showCloseButton) && (
-            <div className="flex justify-between items-start p-6 border-b border-gray-200">
+            <div className="flex justify-between items-start p-6 border-b border-gray-200 dark:border-gray-700">
               {(title || description) && (
-                <div>
+                <div className="flex-1">
                   {title && (
-                    <h3 className="text-lg font-semibold leading-6 text-gray-900">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                       {title}
                     </h3>
                   )}
                   {description && (
-                    <p className="mt-2 text-sm text-gray-500">{description}</p>
+                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                      {description}
+                    </p>
                   )}
                 </div>
               )}
               {showCloseButton && (
                 <button
                   type="button"
-                  className="rounded-lg text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="ml-4 rounded-lg p-1 text-gray-400 hover:text-gray-600 
+                    dark:hover:text-gray-300 focus:outline-none focus:ring-2 
+                    focus:ring-blue-500 transition-colors duration-200"
                   onClick={onClose}>
                   <span className="sr-only">Close</span>
                   <XMarkIcon className="h-6 w-6" aria-hidden="true" />
@@ -109,7 +99,7 @@ export default function DialogContainer({
           )}
 
           {/* Content */}
-          <div className="p-6">{children}</div>
+          <div className="p-6 max-h-[70vh] overflow-y-auto">{children}</div>
         </div>
       </div>
     </div>

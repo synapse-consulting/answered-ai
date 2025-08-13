@@ -1,232 +1,108 @@
-import React, { useCallback } from "react";
-import ReactFlow, {
-  addEdge,
-  Background,
-  Controls,
-  MiniMap,
-  Connection,
-  Edge,
-  Node,
-  useNodesState,
-  useEdgesState,
-} from "reactflow";
-import "reactflow/dist/style.css";
+import React from "react";
+import { ReactFlow, Background, Controls, MiniMap } from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 import Sidebar from "../components/Sidebar";
 import CustomNode from "../components/CustomNode";
-import HttpRequestModal from "../components/HttpRequestModal";
+import { HttpRequestModal } from "../nodes/http-request";
+import { NotificationModal } from "../nodes/notification";
+import { CrmModal } from "../nodes/crm";
+import { useWorkflowState } from "../hooks/useWorkflowState";
+import { NODE_TYPES, NodeTypes } from "../types";
 
-let nodeId = 1;
-
-const initialNodes: Node[] = [
-  {
-    id: "1",
-    position: { x: 250, y: 50 },
-    type: "custom",
-    data: { label: "Trigger Flow", color: "#555", icon: null, description: "" },
-  },
-];
-
-const initialEdges: Edge[] = [];
-
-const customNode = { custom: CustomNode };
+const customNodeTypes: Record<NodeTypes, React.ComponentType<any>> = {
+  "http-request": CustomNode,
+  notification: CustomNode,
+  crm: CustomNode,
+  condition: CustomNode,
+  trigger: CustomNode,
+};
 
 export default function WorkflowBuilder() {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const {
+    nodes,
+    edges,
+    selectedNode,
+    setSelectedNode,
+    onNodesChange,
+    onEdgesChange,
+    onConnect,
+    handleNodeClick,
+  } = useWorkflowState();
 
-  const [selectedNode, setSelectedNode] = React.useState<Node | null>(null);
-
-  interface HttpConfig {
-    method: string;
-    url: string;
-    queryParams: { key: string; value: string }[];
-    headers: { key: string; value: string }[];
-    body?: {
-      contentType: string;
-      content: string;
-    };
-    options: {
-      followRedirects: boolean;
-      verifySSL: boolean;
-    };
-    auth: {
-      type: "none" | "basic" | "bearer";
-      username?: string;
-      password?: string;
-      token?: string;
-    };
-  }
-
-  const onConnect = useCallback((params: Edge | Connection) => {
-    setEdges((eds) => addEdge(params, eds));
-  }, []);
-
-  const onKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (event.key === "Delete" || event.key === "Backspace") {
-        setNodes((nodes) => nodes.filter((node) => !node.selected));
-        setEdges((edges) => edges.filter((edge) => !edge.selected));
-      }
-    },
-    [],
+  // Modal visibility
+  const isHttpRequestModalOpen = Boolean(
+    selectedNode && selectedNode.data.type === NODE_TYPES.HTTP_REQUEST,
   );
 
-  const addNode = (item: any) => {
-    const newNode: Node = {
-      id: `${++nodeId}`,
-      type: "custom",
-      position: { x: Math.random() * 400, y: Math.random() * 400 },
-      data: {
-        label: item.label,
-        color: item.color,
-        icon: item.icon,
-        description: item.description,
-      },
-    };
-    setNodes((nds) => [...nds, newNode]);
-  };
+  const isNotificationModalOpen = Boolean(
+    selectedNode && selectedNode.data.type === NODE_TYPES.NOTIFICATION,
+  );
 
-  // Helper function to create merged workflow structure
-  const createMergedWorkflow = () => {
-    const mergedNodes = nodes.map((node) => {
-      // Find all connections for this node
-      const connections = edges
-        .filter((edge) => edge.source === node.id || edge.target === node.id)
-        .map((edge) => ({
-          id: edge.id,
-          type: edge.source === node.id ? "outgoing" : "incoming",
-          connectedNodeId: edge.source === node.id ? edge.target : edge.source,
-          connectedNodeLabel:
-            nodes.find(
-              (n) =>
-                n.id === (edge.source === node.id ? edge.target : edge.source),
-            )?.data?.label || "Unknown",
-          sourceHandle: edge.sourceHandle,
-          targetHandle: edge.targetHandle,
-        }));
+  const isCrmModalOpen = Boolean(
+    selectedNode && selectedNode.data.type === NODE_TYPES.CRM,
+  );
 
-      // Separate connections by type for easier access
-      const incomingConnections = connections.filter(
-        (c) => c.type === "incoming",
-      );
-      const outgoingConnections = connections.filter(
-        (c) => c.type === "outgoing",
-      );
-
-      return {
-        ...node,
-        connections: {
-          all: connections,
-          incoming: incomingConnections,
-          outgoing: outgoingConnections,
-          count: {
-            total: connections.length,
-            incoming: incomingConnections.length,
-            outgoing: outgoingConnections.length,
-          },
-        },
-      };
-    });
-
-    return {
-      nodes: mergedNodes,
-      metadata: {
-        totalNodes: mergedNodes.length,
-        totalConnections: edges.length,
-        timestamp: new Date().toISOString(),
-        nodeTypes: [...new Set(mergedNodes.map((n) => n.data.label))],
-      },
-      originalEdges: edges, // Keep for reference/reconstruction
-    };
-  };
-
-  const saveWorkflow = () => {
-    const workflow = createMergedWorkflow();
-
-    console.log("ninaodsnufoasnudofasnonu", workflow);
-
-    // Example: Log detailed connection info for each node
-    workflow.nodes.forEach((node) => {
-      if (node.connections.count.total > 0) {
-        console.log(`📋 Node "${node.data.label}" (${node.id}) has:`, {
-          totalConnections: node.connections.count.total,
-          incoming: node.connections.incoming.map(
-            (c) => `from ${c.connectedNodeLabel}`,
-          ),
-          outgoing: node.connections.outgoing.map(
-            (c) => `to ${c.connectedNodeLabel}`,
-          ),
-        });
-      }
-    });
-
-    // Show a simple notification
-    alert(
-      `Workflow saved! ${workflow.metadata.totalNodes} nodes, ${workflow.metadata.totalConnections} connections`,
-    );
-  };
+  // Configuration extraction
+  const httpRequestConfig =
+    selectedNode?.data && "httpConfig" in selectedNode.data
+      ? (selectedNode.data as any).httpConfig
+      : undefined;
+  const notificationConfig =
+    selectedNode?.data && "notificationConfig" in selectedNode.data
+      ? (selectedNode.data as any).notificationConfig
+      : undefined;
+  const crmConfig =
+    selectedNode?.data && "crmConfig" in selectedNode.data
+      ? (selectedNode.data as any).crmConfig
+      : undefined;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "100vh",
-        fontFamily: "Inter, sans-serif",
-        background: "#1e1e1e",
-        color: "#fff",
-      }}>
+    <div className="flex h-screen bg-gray-900 text-white font-sans">
       {/* Flow Canvas */}
-      <div style={{ flex: 1 }}>
+      <div className="flex-1 relative">
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          nodeTypes={customNode}
+          nodeTypes={customNodeTypes}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
-          onNodeClick={(event, node) => {
-            if (node.data.label === "HTTP Request") {
-              setSelectedNode(node);
-            }
-          }}
-          onKeyDown={onKeyDown}
+          onNodeClick={handleNodeClick}
           deleteKeyCode={["Backspace", "Delete"]}
-          fitView>
-          <Background />
+          colorMode="dark"
+          fitView
+          fitViewOptions={{ padding: 0.2 }}
+          proOptions={{ hideAttribution: true }}
+          className="bg-gray-900">
+          <Background gap={20} size={1} className="bg-gray-900" />
           <MiniMap />
           <Controls />
         </ReactFlow>
       </div>
 
       {/* Sidebar */}
-      <Sidebar addNode={addNode} onSave={saveWorkflow} />
+      <Sidebar />
 
+      {/* Configuration Modals */}
       <HttpRequestModal
-        isOpen={
-          selectedNode !== null && selectedNode.data.label === "HTTP Request"
-        }
+        isOpen={isHttpRequestModalOpen}
         onClose={() => setSelectedNode(null)}
-        onSave={(config: HttpConfig) => {
-          if (selectedNode) {
-            // Update the node with the HTTP configuration
-            setNodes((nodes) =>
-              nodes.map((node) =>
-                node.id === selectedNode.id
-                  ? {
-                      ...node,
-                      data: {
-                        ...node.data,
-                        httpConfig: config,
-                        isConfigured: true,
-                      },
-                    }
-                  : node,
-              ),
-            );
-            setSelectedNode(null);
-          }
-        }}
-        initialConfig={selectedNode?.data?.httpConfig}
+        nodeId={selectedNode?.id}
+        initialConfig={httpRequestConfig}
+      />
+
+      <NotificationModal
+        isOpen={isNotificationModalOpen}
+        onClose={() => setSelectedNode(null)}
+        nodeId={selectedNode?.id}
+        initialConfig={notificationConfig}
+      />
+
+      <CrmModal
+        isOpen={isCrmModalOpen}
+        onClose={() => setSelectedNode(null)}
+        nodeId={selectedNode?.id}
+        initialConfig={crmConfig}
       />
     </div>
   );

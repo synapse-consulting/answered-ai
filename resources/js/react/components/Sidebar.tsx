@@ -1,143 +1,109 @@
-import React from "react";
-import { FiMail, FiGlobe } from "react-icons/fi";
-import { FaHubspot, FaSalesforce } from "react-icons/fa";
+import React, { useState } from "react";
+import { nodeMenuItems } from "../config/nodeTypes";
+import { NODE_TYPES, NodeMenuItem, NodeType, NodeTypes } from "../types";
+import { useReactFlow } from "@xyflow/react";
+import { createNodeStructured } from "../utils/node-utils";
 
-interface MenuItemType {
-  label: string;
-  icon: React.ReactNode;
-  description: string;
-  color: string;
-}
+interface Props {}
 
-interface SidebarProps {
-  addNode: (item: MenuItemType) => void;
-  onSave: () => void;
-}
+const Sidebar = () => {
+  const [searchQuery, setSearchQuery] = useState("");
 
-const menuItems: MenuItemType[] = [
-  {
-    label: "Notification",
-    icon: <FiMail size={20} />,
-    description: "Send Email or Slack message",
-    color: "#4cafef",
-  },
-  {
-    label: "HTTP Request",
-    icon: <FiGlobe size={20} />,
-    description: "Call an API endpoint",
-    color: "#f39c12",
-  },
-  {
-    label: "HubSpot",
-    icon: <FaHubspot size={20} />,
-    description: "Integrate HubSpot CRM",
-    color: "#ff7a59",
-  },
-  {
-    label: "Salesforce",
-    icon: <FaSalesforce size={20} />,
-    description: "Integrate Salesforce CRM",
-    color: "#00a1e0",
-  },
-  {
-    label: "Conditions",
-    icon: <FaSalesforce size={20} />,
-    description: "Add Conditions",
-    color: "#00a1e0",
-  },
-];
+  const { addNodes, getNodes, getEdges } = useReactFlow<NodeType>();
 
-const Sidebar: React.FC<SidebarProps> = ({ addNode, onSave }) => {
+  let nodeIdCounter = Date.now();
+
+  const onSave = () => {
+    const structuredNodes = createNodeStructured(getNodes(), getEdges());
+    console.log("🍪 SIDEBAR.TSX ==> onSave", structuredNodes);
+  };
+
+  const handleAddNode = (item: NodeMenuItem) => {
+    const newNode: NodeType = {
+      id: `${++nodeIdCounter}`,
+      type: item.type,
+      position: {
+        x: Math.random() * 400 + 100,
+        y: Math.random() * 400 + 100,
+      },
+      data: {
+        view: item,
+        metadata: {},
+      },
+    };
+
+    addNodes(newNode);
+  };
+
+  const filteredItems = nodeMenuItems.filter(
+    (item) =>
+      item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
   return (
-    <div
-      style={{
-        width: 300,
-        background: "#2c2c2c",
-        borderLeft: "1px solid #444",
-        padding: "16px",
-        display: "flex",
-        flexDirection: "column",
-      }}>
-      <h3
-        style={{
-          marginBottom: "12px",
-          fontWeight: "bold",
-          fontSize: "1.2rem",
-        }}>
-        Add Node
-      </h3>
-      <input
-        type="text"
-        placeholder="Search..."
-        style={{
-          padding: "8px",
-          borderRadius: "6px",
-          border: "none",
-          marginBottom: "16px",
-          outline: "none",
-          background: "#1e1e1e",
-          color: "#fff",
-        }}
-      />
-
-      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-        {menuItems.map((item, i) => (
-          <div
-            key={i}
-            onClick={() => addNode(item)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              padding: "10px",
-              background: "#3a3a3a",
-              borderRadius: "8px",
-              cursor: "pointer",
-              transition: "background 0.2s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "#4a4a4a")}
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.background = "#3a3a3a")
-            }>
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                background: item.color,
-                borderRadius: "6px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: "10px",
-              }}>
-              {item.icon}
-            </div>
-            <div>
-              <div style={{ fontWeight: "bold" }}>{item.label}</div>
-              <div style={{ fontSize: "0.85rem", color: "#ccc" }}>
-                {item.description}
-              </div>
-            </div>
-          </div>
-        ))}
+    <div className="w-80 bg-gray-800 border-l border-gray-600 p-4 flex flex-col h-full">
+      {/* Header */}
+      <div className="mb-4">
+        <h3 className="text-lg font-semibold text-white mb-3">Add Node</h3>
+        <input
+          type="text"
+          placeholder="Search nodes..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg 
+            text-white placeholder-gray-400 focus:outline-none focus:ring-2 
+            focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+        />
       </div>
 
-      <div style={{ marginTop: "auto", paddingTop: "16px" }}>
+      {/* Node List */}
+      <div className="flex-1 space-y-2 overflow-y-auto">
+        {filteredItems.length > 0 ? (
+          filteredItems.map((item, index) => (
+            <div
+              key={index}
+              onClick={() => handleAddNode(item)}
+              className="flex items-center p-3 bg-gray-700 rounded-lg cursor-pointer 
+                transition-all duration-200 hover:bg-gray-600 hover:shadow-md 
+                group active:scale-95">
+              {/* Icon */}
+              <div
+                className="w-10 h-10 rounded-md flex items-center justify-center 
+                  mr-3 text-white flex-shrink-0 group-hover:scale-110 transition-transform duration-200"
+                style={{ backgroundColor: item.color }}>
+                {item.icon}
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <div className="text-white font-medium text-sm truncate">
+                  {item.label}
+                </div>
+                <div className="text-gray-300 text-xs mt-0.5 line-clamp-2">
+                  {item.description}
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-8">
+            <div className="text-gray-400 text-sm">
+              No nodes found matching "{searchQuery}"
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Save Button */}
+      <div className="pt-4 border-t border-gray-700">
         <button
           onClick={onSave}
-          style={{
-            width: "100%",
-            padding: "12px",
-            background: "#4caf50",
-            color: "white",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            fontWeight: "bold",
-            fontSize: "14px",
-            transition: "background 0.2s",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "#45a049")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "#4caf50")}>
+          className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-white 
+            font-medium text-sm rounded-lg transition-all duration-200 
+            focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 
+            focus:ring-offset-gray-800 transform hover:scale-105 active:scale-95 
+            shadow-lg hover:shadow-xl">
           Save Workflow
         </button>
       </div>
