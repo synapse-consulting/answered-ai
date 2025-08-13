@@ -1,91 +1,60 @@
 import React from "react";
-import { Handle, Position } from "reactflow";
+import { Handle, Node, NodeProps, Position } from "@xyflow/react";
+import { BaseNodeData, NodeType, NodeTypes } from "../types";
 
-interface CustomNodeProps {
-  data: {
-    color: string;
-    icon: React.ReactNode;
-    label: string;
-    description?: string;
-    isConfigured?: boolean;
-    httpConfig?: any;
-  };
-  isConnectable?: boolean;
-  selected?: boolean;
-}
+type Props<T extends Record<string, unknown>> = Node<
+  BaseNodeData<T>,
+  NodeTypes
+>;
 
-export default function CustomNode({
+export default function CustomNode<T extends Record<string, unknown>>({
   data,
-  isConnectable,
-  selected,
-}: CustomNodeProps) {
-  console.log("🔄 Rendering CustomNode:", {
-    data,
-    isConnectable,
-    selected,
-  });
+  ...rest
+}: NodeProps<Props<T>>) {
   return (
     <div
-      className="cursor-pointer"
-      style={{
-        background: data.color,
-        padding: "10px",
-        borderRadius: "8px",
-        color: "#fff",
-        fontFamily: "Inter, sans-serif",
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
-        minWidth: "140px",
-      }}>
-      <div
-        style={{
-          background: "rgba(255,255,255,0.2)",
-          borderRadius: "6px",
-          width: "36px",
-          height: "36px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}>
-        {data.icon}
+      className={`cursor-pointer p-3 rounded-lg text-white font-sans flex items-center gap-2 min-w-[140px] transition-all duration-200 ${
+        rest.selected ? "ring-2 ring-blue-400 ring-opacity-75" : ""
+      }`}
+      style={{ backgroundColor: data.view.color }}>
+      {/* Icon Container */}
+      <div className="bg-white bg-opacity-20 rounded-md w-9 h-9 flex items-center justify-center flex-shrink-0">
+        {data.view.icon}
       </div>
-      <div style={{ flex: 1 }}>
-        <div
-          style={{
-            fontWeight: "bold",
-            display: "flex",
-            alignItems: "center",
-            gap: "4px",
-          }}>
-          {data.label}
-          {data.isConfigured && data.label === "HTTP Request" && (
-            <span
-              style={{
-                fontSize: "10px",
-                background: "rgba(34, 197, 94, 0.8)",
-                color: "white",
-                padding: "2px 6px",
-                borderRadius: "4px",
-                fontWeight: "normal",
-              }}>
-              ✓ Configured
+
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1">
+          <span className="font-semibold text-sm truncate">
+            {data.view.label}
+          </span>
+          {data.isConfigured && (
+            <span className="text-xs bg-green-500 bg-opacity-80 text-white px-1.5 py-0.5 rounded text-center whitespace-nowrap">
+              ✓
             </span>
           )}
         </div>
-        {data.description && (
-          <div style={{ fontSize: "0.75rem" }}>{data.description}</div>
-        )}
-        {data.isConfigured && data.httpConfig?.url && (
-          <div style={{ fontSize: "0.65rem", opacity: 0.8, marginTop: "2px" }}>
-            {data.httpConfig.method} {data.httpConfig.url}
+
+        {data.view.description && (
+          <div className="text-xs opacity-90 mt-0.5 line-clamp-2">
+            {data.view.description}
           </div>
         )}
       </div>
 
       {/* Connection handles */}
-      <Handle type="target" position={Position.Top} />
-      <Handle type="source" position={Position.Bottom} />
+      <Handle
+        type="target"
+        position={Position.Top}
+        className="w-3 h-3 bg-gray-300 border-2 border-white"
+        isConnectable={rest.isConnectable}
+      />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className="w-3 h-3 bg-gray-300 border-2 border-white"
+        isConnectable={rest.isConnectable}
+      />
     </div>
   );
 }
