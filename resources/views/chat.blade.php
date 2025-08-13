@@ -222,7 +222,7 @@
                             <template x-for="message in messages" :key="message.message_id">
                                 <div :class="message.direction === 'inbound' ? 'text-left' : 'text-right ml-auto'">
                                     <div :class="message.direction === 'inbound' ? 'bg-gray-100 text-gray-800 dark:bg-white/5' :
-                                        'bg-brand-500 text-white dark:bg-brand-500'"
+                                        'bg-black text-white dark:bg-brand-500'"
                                         class="inline-block rounded-lg px-3 py-2 max-w-[350px]">
                                         <p class="text-sm" x-text="message.message_text"></p>
                                     </div>
