@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Enums\ProvidersEnum;
+use App\Enums\DirectionEnum;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use App\Models\CompanyApp;
@@ -196,7 +196,7 @@ class MetaService
             'phone_number_id'  => $phoneNumberId,
             'from_number'      => $fromNumber,
             'to_number'        => $entry['metadata']['display_phone_number'] ?? null,
-            'direction'        => 'inbound',
+            'direction'        => DirectionEnum::INBOUND,
             'message_type'     => $messageType,
             'message_text'     => $messageText,
             'media_url'        => $mediaUrl,

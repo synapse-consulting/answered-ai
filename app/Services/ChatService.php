@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Chat;
 use App\Models\CompanyApp;
 use App\Models\Contact;
-
+use App\Enums\DirectionEnum; 
 class ChatService
 {
     public function composeMessage(Request $request)
@@ -46,7 +46,7 @@ class ChatService
             'phone_number_id'  => $phoneNumberId,
             'from_number'      => $fromNumber,
             'to_number'        => $toNumber,
-            'direction'        => 'inbound',
+            'direction'        => DirectionEnum::OUTBOUND,
             'message_type'     => $messageType,
             'message_text'     => $messageText,
             'status'           => 'received',
