@@ -14,7 +14,7 @@
      <div class="mb-6">
          <p class="mb-2 text-sm font-semibold text-gray-500">Account</p>
          <ul class="space-y-1">
-             <li class="rounded-md bg-blue-100 p-2 text-sm font-medium text-blue-700">
+             <li class="rounded-md {{ Request::segment(1) == 'profile' ? 'bg-blue-100 text-blue-700' : '' }} p-2 text-sm font-medium ">
                  <div class="flex items-center space-x-2">
                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                          stroke="currentColor" stroke-width="2">
@@ -70,14 +70,14 @@
                      <span>Team</span>
                  </div>
              </li>
-             <li class="rounded-md p-2 text-sm font-medium text-gray-600 hover:bg-gray-100">
+             <li class="rounded-md p-2 text-sm font-medium {{ Request::segment(1) == 'profile' ? 'bg-blue-100 text-blue-700' : 'text-gray-600' }}  hover:bg-gray-100">
                  <div class="flex items-center space-x-2">
                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                          stroke="currentColor" stroke-width="2">
                          <path stroke-linecap="round" stroke-linejoin="round"
                              d="M7 7h.01M7 3h.01M17 17h.01M17 13h.01M17 9h.01M17 5h.01M7 21h.01M7 17h.01M7 13h.01M7 9h.01M7 5h.01" />
                      </svg>
-                     <span>Tags</span>
+                     <span>Intents</span>
                  </div>
              </li>
          </ul>

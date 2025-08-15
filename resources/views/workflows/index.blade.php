@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('')
+@section('title', 'Workflows')
 @section('content')
     <div class="p-4 mt-4 card">
         
@@ -8,7 +8,7 @@
             <div class="flex items-center space-x-2">
                 <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Workflows</h2>
             </div>
-            <x-button href="{{ route('workflows.index') }}">
+            <x-button href="{{ route('workflows.create') }}">
                 + Create Workflow
             </x-button>
         </div>

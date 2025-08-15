@@ -753,3 +753,31 @@ span.flatpickr-weekday,
            checked:bg-[#1F2937] checked:border-[#1F2937] 
            focus:ring-0;
 }
+
+/* Give consistent padding, borders, colors, etc. */
+
+.custom-table{
+  width: 100%;
+  border-radius: 10px;
+}
+.custom-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 700;
+    background-color: #f9fafb; /* light gray */
+    color: #374151; /* text-gray-700 */
+    border-bottom: 1px solid #e5e7eb;
+    font-size:12px;
+}
+
+.custom-table td {
+    padding:0.7rem !important;
+    color: #4b5563; /* text-gray-600 */
+    border-bottom: 1px solid #e5e7eb;
+    font-size:12px;
+    text-align: left;
+}
+
+.custom-table tbody tr:hover {
+    background-color: #f3f4f6; /* hover effect */
+}

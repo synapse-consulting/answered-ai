@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\MetaIntegrationController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\WorkflowController;
 use App\Http\Controllers\IntentController;
@@ -38,15 +38,22 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/chat', [ChatController::class, 'index'])->name('chat');
         Route::get('/chats/{id}', [ChatController::class, 'getMessages'])->name('chats');
-        Route::get('/profile', [UserController::class, 'profile'])->name('profile');
 
         Route::resource('workflows', WorkflowController::class);
-        Route::resource('intents', IntentController::class);
     });
     
     Route::group(['prefix' => 'meta'], function () {
         Route::get('/', [DashboardController::class, 'meta'])->name('meta.integration');
         Route::get('/whatsapp-integration', [MetaIntegrationController::class, 'redirectToMeta'])->name('whatsapp.integration');
         Route::get('/whatsapp-callback', [MetaIntegrationController::class, 'handleMetaCallback'])->name('whatsapp.callback');
+    });
+
+    Route::group(['prefix' => 'profile'], function () {
+        Route::get('/', [ProfileController::class, 'index'])->name('profile');
+        
+        
+        Route::group(['prefix' => 'workspace'], function () {
+            Route::resource('intents', IntentController::class);
+        });
     });
 });

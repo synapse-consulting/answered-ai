@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
+use App\Models\Intent;
 class IntentController extends Controller
 {
     /**
@@ -11,7 +11,8 @@ class IntentController extends Controller
      */
     public function index()
     {
-        //
+        $intents = Intent::orderBy('name','asc')->get();
+        return view('profile.company.intents.index', compact('intents'));
     }
 
     /**
@@ -27,7 +28,18 @@ class IntentController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        Intent::create($request->all());
+
+        return response()->json([
+            'message' => 'Intent created successfully.',
+            'status' => 'success',
+        ], 201);
+
     }
 
     /**
@@ -49,9 +61,20 @@ class IntentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, int $id)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $intent = Intent::find($id);
+        $intent->update($request->all());
+
+        return response()->json([
+            'message' => 'Intent updated successfully.',
+            'status' => 'success',
+        ], 201);        
     }
 
     /**
@@ -59,6 +82,12 @@ class IntentController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $intent = Intent::find($id);
+        $intent->delete();
+
+        return response()->json([
+            'message' => 'Intent deleted successfully.',
+            'status' => 'success',
+        ], 200);
     }
 }

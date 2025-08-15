@@ -5,6 +5,7 @@
         <div class="col-span-12">
             <div class="flex h-screen text-white">
                 <x-profile-sidebar />
+                
                 <div class="flex-1 overflow-y-auto dark-scrollbar bg-white">
                     <div class="flex items-center p-4 justify-between pb-6 border-b border-gray-200">
                         <div>
