@@ -24,7 +24,11 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
   nodeId,
   initialConfig,
 }) => {
-  const { updateNodeData } = useReactFlow();
+  const { updateNodeData, getNode } = useReactFlow();
+  const [error, setError] = React.useState<string | null>(null);
+  const [response, setResponse] = React.useState<any | null>(null);
+  const [isLoading, setIsLoading] = React.useState(false);
+  
   const {
     config,
     updateMethod,
@@ -43,15 +47,66 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
     isValid,
   } = useHttpRequestData(initialConfig);
 
-  const handleSave = () => {
-    if (isValid && nodeId) {
+  const handleSave = async () => {
+    if (!isValid || !nodeId) return;
+
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      const queryString =
+        config.queryParams?.length
+          ? "?" +
+          config.queryParams
+            .map((p) => `${encodeURIComponent(p.key)}=${encodeURIComponent(p.value)}`)
+            .join("&")
+          : "";
+
+      const headers =
+        config.headers?.reduce((acc: Record<string, string>, h) => {
+          if (h.key && h.value) acc[h.key] = h.value;
+          return acc;
+        }, {}) || {};
+
+      let options: RequestInit = {
+        method: config.method,
+        headers,
+      };
+
+      if (["POST", "PUT", "PATCH", "DELETE"].includes(config.method.toUpperCase())) {
+        options.body = config.body?.content || null;
+        if (config.body?.contentType) {
+          options.headers = {
+            ...options.headers,
+            "Content-Type": config.body.contentType,
+          };
+        }
+      }
+
+      const url = config.url + queryString;
+      const response = await fetch(url, options);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || `Request failed with status ${response.status}`);
+      }
+
+      // Update node data and response state
       updateNodeData(nodeId, {
         httpConfig: config,
         isConfigured: true,
+        response: data,
       });
-      onClose();
+      setResponse(data);
+      
+    } catch (error: any) {
+      console.error("Fetch error:", error);
+      setError(error.message || "An error occurred while making the request");
+    } finally {
+      setIsLoading(false);
     }
   };
+
 
   const methodOptions = [
     { value: HTTP_METHODS.GET, label: "GET" },
@@ -85,6 +140,16 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
       description="Configure your HTTP request parameters"
       maxWidth="2xl">
       <div className="space-y-6">
+        {/* API Error */}
+        {error && (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
+              Request Failed
+            </h4>
+            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+          </div>
+        )}
+
         {/* Validation Errors */}
         {errors.length > 0 && (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
@@ -246,6 +311,20 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
           </div>
         </div>
 
+        {/* Response Section */}
+        {response && (
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Response
+            </h4>
+            <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+              <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                {JSON.stringify(response, null, 2)}
+              </pre>
+            </div>
+          </div>
+        )}
+
         {/* Action Buttons */}
         <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
           <button
@@ -256,20 +335,19 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
               rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 
               focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 
               transition-all duration-200">
-            Cancel
+            Close
           </button>
           <button
             type="button"
             onClick={handleSave}
-            disabled={!isValid}
+            disabled={!isValid || isLoading}
             className={`px-4 py-2 text-sm font-medium text-white rounded-lg shadow-sm 
               focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 
-              transition-all duration-200 ${
-                isValid
-                  ? "bg-blue-500 hover:bg-blue-600 transform hover:-translate-y-0.5"
-                  : "bg-gray-400 cursor-not-allowed"
+              transition-all duration-200 ${isValid && !isLoading
+                ? "bg-blue-500 hover:bg-blue-600 transform hover:-translate-y-0.5"
+                : "bg-gray-400 cursor-not-allowed"
               }`}>
-            Save Configuration
+            {isLoading ? "Executing..." : "Execute"}
           </button>
         </div>
       </div>
