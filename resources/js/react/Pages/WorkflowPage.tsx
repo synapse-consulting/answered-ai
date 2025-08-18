@@ -31,15 +31,15 @@ export default function WorkflowBuilder() {
 
   // Modal visibility
   const isHttpRequestModalOpen = Boolean(
-    selectedNode && selectedNode.data.type === NODE_TYPES.HTTP_REQUEST,
+    selectedNode && selectedNode.type === NODE_TYPES.HTTP_REQUEST,
   );
 
   const isNotificationModalOpen = Boolean(
-    selectedNode && selectedNode.data.type === NODE_TYPES.NOTIFICATION,
+    selectedNode && selectedNode.type === NODE_TYPES.NOTIFICATION,
   );
 
   const isCrmModalOpen = Boolean(
-    selectedNode && selectedNode.data.type === NODE_TYPES.CRM,
+    selectedNode && selectedNode.type === NODE_TYPES.CRM,
   );
 
   // Configuration extraction
