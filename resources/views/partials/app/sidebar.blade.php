@@ -36,7 +36,7 @@
 
                     <!-- AI Flow -->
                     <li>
-                        <a href="{{ route('workflow') }}"
+                        <a href="{{ route('workflows.index') }}"
                             class="group relative flex flex-col items-center justify-center gap-1 text-gray-600 dark:text-gray-300 hover:text-primary"
                             title="AI Flow">
                             <img src="{{ asset('system/images/icons/workflow.png') }}" />
