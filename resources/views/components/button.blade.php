@@ -22,7 +22,7 @@
                 break;
 
             case 'btn-secondary':
-                $btnTypeClass = 'btn bg-purple-600 hover:bg-purple-700 text-white'; 
+                $btnTypeClass = 'btn bg-gray-300 hover:bg-gray-700 text-white'; 
                 break;
 
             case 'btn-success':

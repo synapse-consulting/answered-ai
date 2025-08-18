@@ -57,12 +57,10 @@
             <form @submit.prevent="createIntent">
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Intent Name</label>
-                        <input type="text" x-model="form.name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="Enter intent name" />
+                        <x-input label="Name" required type="text" name="name" x-model="form.name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="Enter intent name" required validate="name" />
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Description</label>
-                        <textarea x-model="form.description" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="Enter intent description"></textarea>
+                        <x-textarea label="Description" required name="description" x-model="form.description" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="Enter intent description" required validate="description"></x-textarea>
                     </div>
                     <div class="flex justify-end space-x-3">
                         <x-button @click="showCreateModal = false" type="button" class="btn-secondary">Cancel</x-button>
@@ -82,14 +80,14 @@
             <form @submit.prevent="updateIntent">
                 <div class="space-y-4">
                     <div>
-                        <x-input label="Name" name="name" type="text" x-model="form.name" placeholder="Enter intent name" />
+                        <x-input label="Name" name="name" type="text" x-model="form.name" placeholder="Enter intent name" required />
                     </div>
                     <div>
                         <x-textarea name="description" label="Description" 
-                        x-model="form.description" placeholder="Enter intent description"></x-textarea>
+                        x-model="form.description" placeholder="Enter intent description" required></x-textarea>
                     </div>
                     <div class="flex justify-end space-x-3">
-                        <x-button @click="showEditModal = false" type="button" btntype="btn-warning">Cancel</x-button>
+                        <x-button @click="showEditModal = false" type="button" btntype="btn-secondary">Cancel</x-button>
                         <x-button type="submit" class="btn-primary">Update</x-button>
                     </div>
                 </div>

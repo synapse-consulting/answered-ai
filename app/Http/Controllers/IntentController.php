@@ -30,7 +30,7 @@ class IntentController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'required|string',
         ]);
 
         Intent::create($request->all());
@@ -65,7 +65,7 @@ class IntentController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'required|string',
         ]);
 
         $intent = Intent::find($id);

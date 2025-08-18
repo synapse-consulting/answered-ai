@@ -23,6 +23,7 @@ class WorkflowController extends Controller
         $data['name'] = Str::random(7); 
         $data['executable_flow'] = $request->workflow; 
         $data['intent_id'] = $request->intent ?? 1; 
+        
         $workflow = Workflow::create($data);
         return response()->json(['workflow' => $workflow]); 
     }
