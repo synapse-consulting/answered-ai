@@ -17,9 +17,6 @@ use App\Http\Controllers\MetaIntegrationController;
 |
 */
 
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
 Route::post('/recieve-message', [MetaIntegrationController::class, 'webhookPost'])->name('api.recieve.message');
 Route::post('/compose-message', [ChatController::class, 'composeMessage'])->name('api.compose.message');
 
