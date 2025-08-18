@@ -43,7 +43,7 @@ export const useWorkflowState = () => {
 
   const handleNodeClick = useCallback((event: React.MouseEvent, node: any) => {
     const nodeType = node?.data.view.type;
-    if ([NODE_TYPES.HTTP_REQUEST, NODE_TYPES.NOTIFICATION, NODE_TYPES.CRM].includes(nodeType)) {
+    if ([NODE_TYPES.HTTP_REQUEST, NODE_TYPES.NOTIFICATION, NODE_TYPES.CRM, NODE_TYPES.CONDITION].includes(nodeType)) {
       setSelectedNode(node);
     }
   }, []);

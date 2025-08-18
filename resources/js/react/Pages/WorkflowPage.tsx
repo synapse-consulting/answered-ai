@@ -6,6 +6,7 @@ import CustomNode from "../components/CustomNode";
 import { HttpRequestModal } from "../nodes/http-request";
 import { NotificationModal } from "../nodes/notification";
 import { CrmModal } from "../nodes/crm";
+import { ConditionModal } from "../nodes/condition";
 import { useWorkflowState } from "../hooks/useWorkflowState";
 import { NODE_TYPES, NodeTypes } from "../types";
 
@@ -42,6 +43,10 @@ export default function WorkflowBuilder() {
     selectedNode && selectedNode.type === NODE_TYPES.CRM,
   );
 
+  const isConditionModalOpen = Boolean(
+    selectedNode && selectedNode.type === NODE_TYPES.CONDITION,
+  );
+
   // Configuration extraction
   const httpRequestConfig =
     selectedNode?.data && "httpConfig" in selectedNode.data
@@ -54,6 +59,11 @@ export default function WorkflowBuilder() {
   const crmConfig =
     selectedNode?.data && "crmConfig" in selectedNode.data
       ? (selectedNode.data as any).crmConfig
+      : undefined;
+      
+  const conditionConfig =
+    selectedNode?.data && "conditionConfig" in selectedNode.data
+      ? (selectedNode.data as any).conditionConfig
       : undefined;
 
   return (
@@ -103,6 +113,13 @@ export default function WorkflowBuilder() {
         onClose={() => setSelectedNode(null)}
         nodeId={selectedNode?.id}
         initialConfig={crmConfig}
+      />
+
+      <ConditionModal
+        isOpen={isConditionModalOpen}
+        onClose={() => setSelectedNode(null)}
+        nodeId={selectedNode?.id}
+        initialConfig={conditionConfig}
       />
     </div>
   );
