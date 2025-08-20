@@ -92,15 +92,18 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
       }
 
       // Update node data and response state
-      updateNodeData(nodeId, {
+      const updatedData = {
         httpConfig: config,
         isConfigured: true,
         response: data,
-      });
-      setResponse(data);
+      };
       
+      updateNodeData(nodeId, updatedData);
+      setResponse(data); // Update local state too
+      
+
+
     } catch (error: any) {
-      console.error("Fetch error:", error);
       setError(error.message || "An error occurred while making the request");
     } finally {
       setIsLoading(false);

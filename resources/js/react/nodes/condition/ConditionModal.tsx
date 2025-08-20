@@ -30,39 +30,37 @@ const DATA_TYPES = [
   { value: 'boolean', label: 'True/False' },
 ];
 
-// Example API responses - these would typically come from props or context
-const apiResponses = {
-  'Response 1': JSON.stringify({
-    "status": true,
-    "message": "mtjonline.com Result",
-    "data": {
-      "id": 76767,
-      "name": "mtjonline.com",
-      "score": 98,
-      "score_status": "permanent",
-      "scan_date": "2025-08-01",
-      "scan_type": 2,
-      "created_at": "1754006400.0"
+// Function to collect responses from HTTP request nodes
+const collectHttpResponses = (nodes: any[]) => {
+  const responses: Record<string, string> = {};
+  
+  nodes.forEach((node) => {
+    // Only collect responses from http-request type nodes
+    if (node.type === 'http-request' && node.data?.response) {
+      // Add node label or id for better identification
+      const nodeName = node.data?.httpConfig?.url 
+        ? `Response from ${node.data.httpConfig.url}`
+        : `Response from Node ${node.id}`;
+        
+      responses[nodeName] = JSON.stringify(node.data.response);
     }
-  }),
-  'Response 2': JSON.stringify({
-    "success": true,
-    "result": {
-      "user": {
-        "id": 123,
-        "name": "John Doe",
-        "email": "john@example.com"
-      },
-      "settings": {
-        "theme": "dark",
-        "notifications": true
-      }
-    }
-  })
-};
+  });
 
-// Get hierarchical suggestions from all responses
-const suggestions = getJsonSuggestions(apiResponses);
+  // Add default response if no responses found
+  if (Object.keys(responses).length === 0) {
+    responses['Example Response'] = JSON.stringify({
+      "status": true,
+      "message": "Example Response",
+      "data": {
+        "id": 123,
+        "name": "example",
+        "value": "sample"
+      }
+    });
+  }
+
+  return responses;
+};
 
 export const ConditionModal: React.FC<ConditionModalProps> = ({
   isOpen,
@@ -70,7 +68,32 @@ export const ConditionModal: React.FC<ConditionModalProps> = ({
   nodeId,
   initialConfig,
 }) => {
-  const { updateNodeData } = useReactFlow();
+  const { updateNodeData, getNodes } = useReactFlow();
+  const [apiResponses, setApiResponses] = React.useState<Record<string, string>>({});
+
+  // Update API responses whenever nodes change
+  React.useEffect(() => {
+    // Initial load of responses
+    const responses = collectHttpResponses(getNodes());
+    setApiResponses(responses);
+
+    // Set up an interval to check for new responses
+    const checkInterval = setInterval(() => {
+      const updatedResponses = collectHttpResponses(getNodes());
+      setApiResponses(prev => {
+        // Only update if there are actual changes
+        const prevString = JSON.stringify(prev);
+        const newString = JSON.stringify(updatedResponses);
+        return prevString !== newString ? updatedResponses : prev;
+      });
+    }, 1000); // Check every second
+
+    // Cleanup interval
+    return () => clearInterval(checkInterval);
+  }, [getNodes]);
+
+  const suggestions = getJsonSuggestions(apiResponses);
+
   const [config, setConfig] = React.useState<ConditionConfig>(
     initialConfig || {
       operator: 'equals',
