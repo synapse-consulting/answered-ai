@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\OrderController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MetaIntegrationController;
@@ -25,7 +26,9 @@ Route::post('/compose-message', [ChatController::class, 'composeMessage'])->name
 
 Route::get('/menus', [MenuController::class, 'list'])->name('api.menus.list');
 
-
+// Order Routes
+Route::post('/orders', [OrderController::class, 'store'])->name('api.orders.store');
+Route::get('/orders/{orderId}', [OrderController::class, 'show'])->name('api.orders.show');
 
 Route::group(['prefix' => 'integrations'], function () {
     Route::group(['prefix' => 'shopify'], function () {
