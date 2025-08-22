@@ -9,6 +9,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\WorkflowController;
 use App\Http\Controllers\IntentController;
+use App\Http\Controllers\MenuController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,9 +23,7 @@ use App\Http\Controllers\IntentController;
 */
 
 
-Route::get('/', function () {
-    return redirect(url('/login'));
-});
+Route::get('/', [MenuController::class, 'index'])->name('menu.index');
 
 Auth::routes(); 
 

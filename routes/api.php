@@ -1,9 +1,12 @@
 <?php
 
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\MenuController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MetaIntegrationController;
+use App\Http\Controllers\Api\V1\Integrations\ShopifyController;
+
 
 
 /*
@@ -20,4 +23,15 @@ use App\Http\Controllers\MetaIntegrationController;
 Route::post('/recieve-message', [MetaIntegrationController::class, 'webhookPost'])->name('api.recieve.message');
 Route::post('/compose-message', [ChatController::class, 'composeMessage'])->name('api.compose.message');
 
+Route::get('/menus', [MenuController::class, 'list'])->name('api.menus.list');
 
+
+
+Route::group(['prefix' => 'integrations'], function () {
+    Route::group(['prefix' => 'shopify'], function () {
+        Route::post('/create-order', [ShopifyController::class, 'createOrder'])->name('api.shopify.create.order');
+        Route::get('/orders/{id}', [ShopifyController::class, 'getOrder'])->name('api.shopify.get.order');
+        Route::get('/products', [ShopifyController::class, 'getProducts'])->name('api.shopify.get.products');
+        Route::get('/sales', [ShopifyController::class, 'getSales'])->name('api.shopify.get.sales');
+    });    
+});
