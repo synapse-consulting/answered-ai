@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { HttpConfig } from '../../types';
+import { HttpConfig } from './types';
 
 const DEFAULT_HTTP_CONFIG: HttpConfig = {
   method: "GET",

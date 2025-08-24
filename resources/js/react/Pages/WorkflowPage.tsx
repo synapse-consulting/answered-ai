@@ -3,19 +3,21 @@ import { ReactFlow, Background, Controls, MiniMap } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import Sidebar from "../components/Sidebar";
 import CustomNode from "../components/CustomNode";
-import { HttpRequestModal } from "../nodes/http-request";
-import { NotificationModal } from "../nodes/notification";
-import { CrmModal } from "../nodes/crm";
-import { ConditionModal } from "../nodes/condition";
+import { NotificationModal } from "../nodes/notification/NotificationModal";
+import { CrmModal } from "../nodes/crm/CrmModal";
+import { ConditionModal } from "../nodes/condition/ConditionModal";
 import { useWorkflowState } from "../hooks/useWorkflowState";
 import { NODE_TYPES, NodeTypes } from "../types";
+import { HttpRequestModal } from "../nodes/http-request/HttpRequestModal";
+import HttpRequestNode from "../nodes/http-request/HttpRequestNode";
+import TriggerNode from "../nodes/trigger/TriggerNode";
 
 const customNodeTypes: Record<NodeTypes, React.ComponentType<any>> = {
-  "http-request": CustomNode,
+  trigger: TriggerNode,
+  httpRequest: HttpRequestNode,
   notification: CustomNode,
   crm: CustomNode,
   condition: CustomNode,
-  trigger: CustomNode,
 };
 
 export default function WorkflowBuilder() {
@@ -30,24 +32,6 @@ export default function WorkflowBuilder() {
     handleNodeClick,
   } = useWorkflowState();
 
-  // Modal visibility
-  const isHttpRequestModalOpen = Boolean(
-    selectedNode && selectedNode.type === NODE_TYPES.HTTP_REQUEST,
-  );
-
-  const isNotificationModalOpen = Boolean(
-    selectedNode && selectedNode.type === NODE_TYPES.NOTIFICATION,
-  );
-
-  const isCrmModalOpen = Boolean(
-    selectedNode && selectedNode.type === NODE_TYPES.CRM,
-  );
-
-  const isConditionModalOpen = Boolean(
-    selectedNode && selectedNode.type === NODE_TYPES.CONDITION,
-  );
-
-  // Configuration extraction
   const httpRequestConfig =
     selectedNode?.data && "httpConfig" in selectedNode.data
       ? (selectedNode.data as any).httpConfig
@@ -60,7 +44,7 @@ export default function WorkflowBuilder() {
     selectedNode?.data && "crmConfig" in selectedNode.data
       ? (selectedNode.data as any).crmConfig
       : undefined;
-      
+
   const conditionConfig =
     selectedNode?.data && "conditionConfig" in selectedNode.data
       ? (selectedNode.data as any).conditionConfig
@@ -68,7 +52,6 @@ export default function WorkflowBuilder() {
 
   return (
     <div className="flex h-screen bg-gray-900 text-white font-sans">
-      {/* Flow Canvas */}
       <div className="flex-1 relative">
         <ReactFlow
           nodes={nodes}
@@ -90,33 +73,31 @@ export default function WorkflowBuilder() {
         </ReactFlow>
       </div>
 
-      {/* Sidebar */}
       <Sidebar />
 
-      {/* Configuration Modals */}
       <HttpRequestModal
-        isOpen={isHttpRequestModalOpen}
+        isOpen={selectedNode?.type === NODE_TYPES.HTTP_REQUEST}
         onClose={() => setSelectedNode(null)}
         nodeId={selectedNode?.id}
         initialConfig={httpRequestConfig}
       />
 
       <NotificationModal
-        isOpen={isNotificationModalOpen}
+        isOpen={selectedNode?.type === NODE_TYPES.NOTIFICATION}
         onClose={() => setSelectedNode(null)}
         nodeId={selectedNode?.id}
         initialConfig={notificationConfig}
       />
 
       <CrmModal
-        isOpen={isCrmModalOpen}
+        isOpen={selectedNode?.type === NODE_TYPES.CRM}
         onClose={() => setSelectedNode(null)}
         nodeId={selectedNode?.id}
         initialConfig={crmConfig}
       />
 
       <ConditionModal
-        isOpen={isConditionModalOpen}
+        isOpen={selectedNode?.type === NODE_TYPES.CONDITION}
         onClose={() => setSelectedNode(null)}
         nodeId={selectedNode?.id}
         initialConfig={conditionConfig}

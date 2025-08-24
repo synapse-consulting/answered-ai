@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
 import DialogContainer from "../../components/DialogContainer";
-import {
-  FormField,
-  SelectField,
-  TextareaField,
-  CheckboxField,
-  KeyValueEditor,
-} from "../../components/ui";
+import { FormField } from "../../components/ui/FormField";
+import { SelectField } from "../../components/ui/SelectField";
+import { TextareaField } from "../../components/ui/TextareaField";
+import { CheckboxField } from "../../components/ui/CheckboxField";
+import { KeyValueEditor } from "../../components/ui/KeyValueEditor";
 import { NotificationConfig } from "../../types";
 import { useReactFlow } from "@xyflow/react";
 

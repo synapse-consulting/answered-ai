@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { createPortal } from "react-dom";
 
 const maxWidthClasses = {
   sm: "max-w-sm",
@@ -15,9 +14,10 @@ interface Props {
   onClose: () => void;
   title?: string;
   description?: string;
-  children: React.ReactNode;
   maxWidth?: keyof typeof maxWidthClasses;
   showCloseButton?: boolean;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
 }
 
 export default function DialogContainer({
@@ -25,9 +25,10 @@ export default function DialogContainer({
   onClose,
   title,
   description,
-  children,
   maxWidth = "2xl",
   showCloseButton = true,
+  children,
+  footer,
 }: Props) {
   // Handle escape key press
   useEffect(() => {
@@ -51,21 +52,19 @@ export default function DialogContainer({
 
   if (!isOpen) return null;
 
-  const modalContent = (
+  return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-300"
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-linear"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Modal Content */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div
-          className={`relative transform overflow-hidden rounded-xl bg-white dark:bg-gray-800 
-            shadow-2xl transition-all duration-300 w-full ${maxWidthClasses[maxWidth]} 
-            animate-in zoom-in-95 fade-in duration-300`}
+          className={`relative transform overflow-hidden rounded-xl bg-background
+            shadow-2xl transition-linear w-full ${maxWidthClasses[maxWidth]} 
+            animate-modal-enter`}
           onClick={(e) => e.stopPropagation()}>
           {/* Header */}
           {(title || description || showCloseButton) && (
@@ -100,12 +99,9 @@ export default function DialogContainer({
 
           {/* Content */}
           <div className="p-6 max-h-[70vh] overflow-y-auto">{children}</div>
+          <div className="p-6 sticky bottom-0 bg-background">{footer}</div>
         </div>
       </div>
     </div>
   );
-
-  // Use dedicated modal root if available, otherwise fall back to document body
-  const modalRoot = document.getElementById("modal-root") || document.body;
-  return createPortal(modalContent, modalRoot);
 }

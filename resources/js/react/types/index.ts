@@ -1,9 +1,13 @@
-import { Node, Edge, Connection } from "@xyflow/react";
+import { Node } from "@xyflow/react";
 import React from "react";
 
-export interface BaseNodeData<T extends Record<string, unknown>> extends Record<string, unknown> {
+export type ExecutionStatus = 'Pending' | 'Running' | 'Completed' | 'Failed';
+
+export type RecordUnknown = Record<string, unknown>;
+
+export interface BaseNodeData<T extends RecordUnknown> extends RecordUnknown {
   view: NodeView;
-  isConfigured?: boolean
+  executionStatus?: ExecutionStatus;
   metadata: T;
 }
 
@@ -16,34 +20,12 @@ export interface NodeView {
 }
 
 
-export type NodeTypes = 'trigger' | 'http-request' | 'notification' | 'crm' | 'condition';
+export type NodeTypes = 'trigger' | 'httpRequest' | 'notification' | 'crm' | 'condition';
 
-export interface NodeType extends Node<BaseNodeData<Record<string, unknown>>, NodeTypes> {}
-
-// HTTP Request Configuration
-export interface HttpConfig extends Record<string, unknown> {
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-  url: string;
-  queryParams: KeyValuePair[];
-  headers: KeyValuePair[];
-  body?: {
-    contentType: string;
-    content: string;
-  };
-  options: {
-    followRedirects: boolean;
-    verifySSL: boolean;
-  };
-  auth: {
-    type: 'none' | 'basic' | 'bearer';
-    username?: string;
-    password?: string;
-    token?: string;
-  };
-}
+export interface NodeType extends Node<BaseNodeData<RecordUnknown>, NodeTypes> {}
 
 // Notification Configuration
-export interface NotificationConfig extends Record<string, unknown> {
+export interface NotificationConfig extends RecordUnknown {
   type: 'email' | 'slack' | 'sms' | 'webhook';
   recipients: KeyValuePair[];
   subject?: string;
@@ -54,7 +36,7 @@ export interface NotificationConfig extends Record<string, unknown> {
 }
 
 // CRM Configuration
-export interface CrmConfig extends Record<string, unknown> {
+export interface CrmConfig extends RecordUnknown {
   provider: 'hubspot' | 'salesforce' | 'pipedrive' | 'zoho';
   action: 'create' | 'update' | 'get' | 'delete' | 'search';
   object: 'contact' | 'company' | 'deal' | 'ticket' | 'product';
@@ -65,14 +47,12 @@ export interface CrmConfig extends Record<string, unknown> {
 }
 
 // Condition Configuration
-export interface ConditionConfig extends Record<string, unknown> {
+export interface ConditionConfig extends RecordUnknown {
   operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains';
   leftValue: string;
   rightValue: string;
   dataType: 'string' | 'number' | 'boolean';
 }
-
-export interface HttpRequestNodeData extends BaseNodeData<HttpConfig> {}
 
 export interface NotificationNodeData extends BaseNodeData<NotificationConfig> {}
 
@@ -80,7 +60,7 @@ export interface CrmNodeData extends BaseNodeData<CrmConfig> {}
 
 export interface ConditionNodeData extends BaseNodeData<ConditionConfig> {}
 
-export interface TriggerNodeData extends BaseNodeData<Record<string, unknown>> {}
+export interface TriggerNodeData extends BaseNodeData<RecordUnknown> {}
 
 
 export interface KeyValuePair {
@@ -101,7 +81,7 @@ export interface NodeMenuItem {
 // Constants
 export const NODE_TYPES = {
   TRIGGER: 'trigger' as const,
-  HTTP_REQUEST: 'http-request' as const,
+  HTTP_REQUEST: 'httpRequest' as const,
   NOTIFICATION: 'notification' as const,
   CRM: 'crm' as const,
   CONDITION: 'condition' as const,

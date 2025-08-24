@@ -1,15 +1,15 @@
 import React from "react";
 import DialogContainer from "../../components/DialogContainer";
-import {
-  FormField,
-  SelectField,
-  TextareaField,
-  CheckboxField,
-  KeyValueEditor,
-} from "../../components/ui";
+import { FormField } from "../../components/ui/FormField";
+import { SelectField } from "../../components/ui/SelectField";
+import { TextareaField } from "../../components/ui/TextareaField";
+import { CheckboxField } from "../../components/ui/CheckboxField";
+import { KeyValueEditor } from "../../components/ui/KeyValueEditor";
+import { Button } from "../../components/ui/Button";
 import { useHttpRequestData } from "./useHttpRequestData";
-import { HttpConfig, HTTP_METHODS, AUTH_TYPES } from "../../types";
+import { HTTP_METHODS, AUTH_TYPES } from "../../types";
 import { useReactFlow } from "@xyflow/react";
+import { HttpConfig } from "./types";
 
 interface HttpRequestModalProps {
   isOpen: boolean;
@@ -28,7 +28,7 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
   const [error, setError] = React.useState<string | null>(null);
   const [response, setResponse] = React.useState<any | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
-  
+
   const {
     config,
     updateMethod,
@@ -54,13 +54,15 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
     setIsLoading(true);
 
     try {
-      const queryString =
-        config.queryParams?.length
-          ? "?" +
+      const queryString = config.queryParams?.length
+        ? "?" +
           config.queryParams
-            .map((p) => `${encodeURIComponent(p.key)}=${encodeURIComponent(p.value)}`)
+            .map(
+              (p) =>
+                `${encodeURIComponent(p.key)}=${encodeURIComponent(p.value)}`,
+            )
             .join("&")
-          : "";
+        : "";
 
       const headers =
         config.headers?.reduce((acc: Record<string, string>, h) => {
@@ -73,7 +75,9 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
         headers,
       };
 
-      if (["POST", "PUT", "PATCH", "DELETE"].includes(config.method.toUpperCase())) {
+      if (
+        ["POST", "PUT", "PATCH", "DELETE"].includes(config.method.toUpperCase())
+      ) {
         options.body = config.body?.content || null;
         if (config.body?.contentType) {
           options.headers = {
@@ -88,7 +92,9 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || `Request failed with status ${response.status}`);
+        throw new Error(
+          data.message || `Request failed with status ${response.status}`,
+        );
       }
 
       // Update node data and response state
@@ -97,19 +103,15 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
         isConfigured: true,
         response: data,
       };
-      
+
       updateNodeData(nodeId, updatedData);
       setResponse(data); // Update local state too
-      
-
-
     } catch (error: any) {
       setError(error.message || "An error occurred while making the request");
     } finally {
       setIsLoading(false);
     }
   };
-
 
   const methodOptions = [
     { value: HTTP_METHODS.GET, label: "GET" },
@@ -141,7 +143,21 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
       onClose={onClose}
       title="HTTP Request Configuration"
       description="Configure your HTTP request parameters"
-      maxWidth="2xl">
+      maxWidth="2xl"
+      footer={
+        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <Button variant="secondary" onClick={onClose}>
+            Close
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSave}
+            disabled={!isValid}
+            isLoading={isLoading}>
+            Execute
+          </Button>
+        </div>
+      }>
       <div className="space-y-6">
         {/* API Error */}
         {error && (
@@ -295,9 +311,7 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
 
         {/* Options */}
         <div className="space-y-4">
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Request Options
-          </h4>
+          <h4 className="text-sm font-medium text-gray-300">Request Options</h4>
           <div className="space-y-3">
             <CheckboxField
               label="Follow redirects"
@@ -327,32 +341,6 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
             </div>
           </div>
         )}
-
-        {/* Action Buttons */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 
-              bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 
-              rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 
-              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 
-              transition-all duration-200">
-            Close
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={!isValid || isLoading}
-            className={`px-4 py-2 text-sm font-medium text-white rounded-lg shadow-sm 
-              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 
-              transition-all duration-200 ${isValid && !isLoading
-                ? "bg-blue-500 hover:bg-blue-600 transform hover:-translate-y-0.5"
-                : "bg-gray-400 cursor-not-allowed"
-              }`}>
-            {isLoading ? "Executing..." : "Execute"}
-          </button>
-        </div>
       </div>
     </DialogContainer>
   );
