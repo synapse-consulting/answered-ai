@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import DialogContainer from "../../components/DialogContainer";
-import {
-  FormField,
-  SelectField,
-  KeyValueEditor,
-  CheckboxField,
-} from "../../components/ui";
+import { FormField } from "../../components/ui/FormField";
+import { SelectField } from "../../components/ui/SelectField";
+import { KeyValueEditor } from "../../components/ui/KeyValueEditor";
+import { CheckboxField } from "../../components/ui/CheckboxField";
 import { CrmConfig } from "../../types";
 import { useReactFlow } from "@xyflow/react";
 

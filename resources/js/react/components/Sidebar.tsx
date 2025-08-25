@@ -42,7 +42,7 @@ const Sidebar = () => {
   );
 
   return (
-    <div className="w-80 bg-gray-800 border-l border-gray-600 p-4 flex flex-col h-full">
+    <div className="w-80 bg-background border-l border-gray-600 p-4 flex flex-col h-full">
       {/* Header */}
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-white mb-3">Add Node</h3>

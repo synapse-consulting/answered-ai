@@ -1,16 +1,12 @@
-import React, { useCallback } from 'react';
-import { 
-  useNodesState, 
-  useEdgesState, 
+import React, { useCallback } from "react";
+import {
+  useNodesState,
+  useEdgesState,
   addEdge,
   Connection,
   Edge,
-  useReactFlow
-} from '@xyflow/react';
-import { 
-  NodeType,
-  NODE_TYPES 
-} from '../types';
+} from "@xyflow/react";
+import { NodeType, NODE_TYPES } from "../types";
 
 const initialNodes: NodeType[] = [
   {
@@ -20,7 +16,7 @@ const initialNodes: NodeType[] = [
     data: {
       view: {
         label: "Trigger Flow",
-        color: "#555",
+        color: "#555555",
         icon: null,
         description: "",
         type: NODE_TYPES.TRIGGER,
@@ -36,14 +32,17 @@ export const useWorkflowState = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = React.useState<NodeType | null>(null);
-  
-  const onConnect = useCallback((params: Connection) => {
-    setEdges((eds) => addEdge(params, eds));
-  }, [setEdges]);
+
+  const onConnect = useCallback(
+    (params: Connection) => {
+      setEdges((eds) => addEdge(params, eds));
+    },
+    [setEdges],
+  );
 
   const handleNodeClick = useCallback((event: React.MouseEvent, node: any) => {
     const nodeType = node?.data.view.type;
-    if ([NODE_TYPES.HTTP_REQUEST, NODE_TYPES.NOTIFICATION, NODE_TYPES.CRM, NODE_TYPES.CONDITION].includes(nodeType)) {
+    if (nodeType !== NODE_TYPES.TRIGGER) {
       setSelectedNode(node);
     }
   }, []);

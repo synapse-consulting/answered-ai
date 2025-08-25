@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { FormField } from '../../../components/ui';
-import { Suggestion } from '../../../utils/jsonTraverser';
+import React, { useState, useRef, useEffect } from "react";
+import { Suggestion } from "../../../utils/jsonTraverser";
+import { FormField } from "../../../components/ui/FormField";
 
 interface SuggestiveInputProps {
   label: string;
@@ -29,19 +29,23 @@ export const SuggestiveInput: React.FC<SuggestiveInputProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
         setShowSuggestions(false);
         setCurrentPath([]);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const currentSuggestions = currentPath.length > 0 
-    ? currentPath[currentPath.length - 1].children || []
-    : suggestions;
+  const currentSuggestions =
+    currentPath.length > 0
+      ? currentPath[currentPath.length - 1].children || []
+      : suggestions;
 
   const handleSuggestionClick = (suggestion: Suggestion) => {
     if (suggestion.children) {
@@ -67,7 +71,8 @@ export const SuggestiveInput: React.FC<SuggestiveInputProps> = ({
         />
       </div>
       {showSuggestions && (
-        <div className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-900 border border-gray-200 
+        <div
+          className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-900 border border-gray-200 
           dark:border-gray-700 rounded-lg shadow-lg max-h-64 overflow-y-auto">
           {/* Breadcrumb navigation */}
           {currentPath.length > 0 && (
@@ -82,14 +87,16 @@ export const SuggestiveInput: React.FC<SuggestiveInputProps> = ({
                   <span className="text-gray-500 dark:text-gray-400">/</span>
                   <button
                     className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
-                    onClick={() => setCurrentPath(currentPath.slice(0, index + 1))}>
+                    onClick={() =>
+                      setCurrentPath(currentPath.slice(0, index + 1))
+                    }>
                     {item.label}
                   </button>
                 </React.Fragment>
               ))}
             </div>
           )}
-          
+
           {/* Suggestions list */}
           <div className="py-1">
             {currentSuggestions.map((suggestion, index) => (
@@ -98,7 +105,12 @@ export const SuggestiveInput: React.FC<SuggestiveInputProps> = ({
                 className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 
                   transition-colors duration-150 flex items-center justify-between"
                 onClick={() => handleSuggestionClick(suggestion)}>
-                <span className={suggestion.children ? 'text-gray-900 dark:text-gray-100 font-medium' : 'text-gray-700 dark:text-gray-300'}>
+                <span
+                  className={
+                    suggestion.children
+                      ? "text-gray-900 dark:text-gray-100 font-medium"
+                      : "text-gray-700 dark:text-gray-300"
+                  }>
                   {suggestion.label}
                 </span>
                 {suggestion.children && (
