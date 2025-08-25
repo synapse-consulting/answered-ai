@@ -60,7 +60,7 @@ export default function WorkflowBuilder() {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
-          onNodeClick={handleNodeClick}
+          onNodeDoubleClick={handleNodeClick}
           deleteKeyCode={["Backspace", "Delete"]}
           colorMode="dark"
           fitView

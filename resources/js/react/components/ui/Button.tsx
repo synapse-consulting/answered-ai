@@ -38,7 +38,7 @@ const buttonSizes = {
   lg: "px-6 py-3 text-base",
 };
 
-export const Button: React.FC<ButtonProps> = ({
+export const CustomButton: React.FC<ButtonProps> = ({
   variant = "primary",
   size = "md",
   isLoading = false,

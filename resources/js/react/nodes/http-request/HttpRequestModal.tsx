@@ -5,7 +5,7 @@ import { SelectField } from "../../components/ui/SelectField";
 import { TextareaField } from "../../components/ui/TextareaField";
 import { CheckboxField } from "../../components/ui/CheckboxField";
 import { KeyValueEditor } from "../../components/ui/KeyValueEditor";
-import { Button } from "../../components/ui/Button";
+import { CustomButton as Button } from "../../components/ui/Button";
 import { useHttpRequestData } from "./useHttpRequestData";
 import { HTTP_METHODS, AUTH_TYPES } from "../../types";
 import { useReactFlow } from "@xyflow/react";

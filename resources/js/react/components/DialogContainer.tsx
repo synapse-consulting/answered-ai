@@ -1,12 +1,19 @@
-import React, { useEffect } from "react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import React from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 const maxWidthClasses = {
-  sm: "max-w-sm",
-  md: "max-w-md",
-  lg: "max-w-lg",
-  xl: "max-w-xl",
-  "2xl": "max-w-2xl",
+  sm: "sm:max-w-sm",
+  md: "sm:max-w-md",
+  lg: "sm:max-w-lg",
+  xl: "sm:max-w-xl",
+  "2xl": "sm:max-w-2xl",
 };
 
 interface Props {
@@ -30,78 +37,42 @@ export default function DialogContainer({
   children,
   footer,
 }: Props) {
-  // Handle escape key press
-  useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("keydown", handleEscape);
-      // Prevent body scroll when modal is open
-      document.body.style.overflow = "hidden";
-    }
-
-    return () => {
-      document.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-linear"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className={cn(
+          maxWidthClasses[maxWidth],
+          "max-h-[90vh] flex flex-col p-0",
+        )}
+        showCloseButton={showCloseButton}>
+        {/* Header */}
+        {(title || description) && (
+          <DialogHeader className="p-6 border-b border-gray-200 dark:border-gray-700">
+            {title && (
+              <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">
+                {title}
+              </DialogTitle>
+            )}
+            {description && (
+              <DialogDescription className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                {description}
+              </DialogDescription>
+            )}
+          </DialogHeader>
+        )}
 
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div
-          className={`relative transform overflow-hidden rounded-xl bg-background
-            shadow-2xl transition-linear w-full ${maxWidthClasses[maxWidth]} 
-            animate-modal-enter`}
-          onClick={(e) => e.stopPropagation()}>
-          {/* Header */}
-          {(title || description || showCloseButton) && (
-            <div className="flex justify-between items-start p-6 border-b border-gray-200 dark:border-gray-700">
-              {(title || description) && (
-                <div className="flex-1">
-                  {title && (
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                      {title}
-                    </h3>
-                  )}
-                  {description && (
-                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                      {description}
-                    </p>
-                  )}
-                </div>
-              )}
-              {showCloseButton && (
-                <button
-                  type="button"
-                  className="ml-4 rounded-lg p-1 text-gray-400 hover:text-gray-600 
-                    dark:hover:text-gray-300 focus:outline-none focus:ring-2 
-                    focus:ring-blue-500 transition-colors duration-200"
-                  onClick={onClose}>
-                  <span className="sr-only">Close</span>
-                  <XMarkIcon className="h-6 w-6" aria-hidden="true" />
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* Content */}
-          <div className="p-6 max-h-[70vh] overflow-y-auto">{children}</div>
-          <div className="p-6 sticky bottom-0 bg-background">{footer}</div>
+        {/* Content */}
+        <div className="p-6 flex-1 overflow-y-auto max-h-[70vh]">
+          {children}
         </div>
-      </div>
-    </div>
+
+        {/* Footer */}
+        {footer && (
+          <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-background">
+            {footer}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
