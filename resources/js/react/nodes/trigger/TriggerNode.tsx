@@ -14,7 +14,7 @@ export default function TriggerNode(props: Props) {
         ...props.data,
         view: { ...props.data.view, icon: <FiPlayCircle size={20} /> },
       }}>
-      <NodeHandle type="source" position={Position.Bottom} />
+      <NodeHandle type="source" position={Position.Right} nodeProps={props} />
     </NodeContainer>
   );
 }

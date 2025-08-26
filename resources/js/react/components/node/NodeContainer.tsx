@@ -1,4 +1,4 @@
-import { Node, NodeProps, useReactFlow } from "@xyflow/react";
+import { Node, NodeProps } from "@xyflow/react";
 import React from "react";
 import { BaseNodeData, NodeTypes, RecordUnknown } from "../../types";
 import { dimColor } from "@/lib/utils";
