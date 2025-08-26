@@ -11,13 +11,15 @@ import { NODE_TYPES, NodeTypes } from "../types";
 import { HttpRequestModal } from "../nodes/http-request/HttpRequestModal";
 import HttpRequestNode from "../nodes/http-request/HttpRequestNode";
 import TriggerNode from "../nodes/trigger/TriggerNode";
+import ConditionNode from "../nodes/condition/ConditionNode";
+import ConnectionLine from "../components/node/ConnectionLine";
 
 const customNodeTypes: Record<NodeTypes, React.ComponentType<any>> = {
   trigger: TriggerNode,
   httpRequest: HttpRequestNode,
   notification: CustomNode,
   crm: CustomNode,
-  condition: CustomNode,
+  condition: ConditionNode,
 };
 
 export default function WorkflowBuilder() {
@@ -61,8 +63,14 @@ export default function WorkflowBuilder() {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onNodeDoubleClick={handleNodeClick}
-          deleteKeyCode={["Backspace", "Delete"]}
+          // deleteKeyCode={["Backspace", "Delete"]}
           colorMode="dark"
+          onDelete={() => {
+            console.log("onDelete");
+          }}
+          onNodesDelete={(nodes) => {
+            console.log("onNodesDelete", nodes);
+          }}
           fitView
           fitViewOptions={{ padding: 0.2 }}
           proOptions={{ hideAttribution: true }}

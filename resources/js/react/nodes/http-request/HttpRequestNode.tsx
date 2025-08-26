@@ -17,8 +17,18 @@ export default function HttpRequestNode(props: Props) {
           </div>
         </div>
       )}
-      <NodeHandle type="target" position={Position.Top} />
-      <NodeHandle type="source" position={Position.Bottom} />
+      <NodeHandle
+        type="target"
+        position={Position.Left}
+        id="target"
+        nodeProps={props}
+      />
+      <NodeHandle
+        type="source"
+        position={Position.Right}
+        id="source2"
+        nodeProps={props}
+      />
     </NodeContainer>
   );
 }

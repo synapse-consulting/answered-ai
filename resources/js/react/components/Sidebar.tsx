@@ -19,12 +19,16 @@ const Sidebar = () => {
   };
 
   const handleAddNode = (item: NodeMenuItem) => {
+    // get last node position
+    const lastNode = getNodes()[getNodes().length - 1];
+    const lastNodePosition = lastNode?.position;
+
     const newNode: NodeType = {
       id: `${++nodeIdCounter}`,
       type: item.type,
       position: {
-        x: Math.random() * 400 + 100,
-        y: Math.random() * 400 + 100,
+        x: (lastNodePosition?.x ?? 0) + 300,
+        y: lastNodePosition?.y ?? 0,
       },
       data: {
         view: item,

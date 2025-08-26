@@ -1,4 +1,3 @@
-import React from "react";
 import { Node, NodeProps } from "@xyflow/react";
 import { BaseNodeData, NodeTypes } from "../types";
 import NodeContainer from "./node/NodeContainer";

@@ -100,11 +100,14 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
       // Update node data and response state
       const updatedData = {
         httpConfig: config,
-        isConfigured: true,
-        response: data,
       };
 
-      updateNodeData(nodeId, updatedData);
+      const currentData = getNode(nodeId);
+
+      updateNodeData(nodeId, {
+        ...currentData!!.data,
+        metadata: config,
+      });
       setResponse(data); // Update local state too
     } catch (error: any) {
       setError(error.message || "An error occurred while making the request");
@@ -145,7 +148,7 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
       description="Configure your HTTP request parameters"
       maxWidth="2xl"
       footer={
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex justify-end gap-3 ">
           <Button variant="secondary" onClick={onClose}>
             Close
           </Button>
