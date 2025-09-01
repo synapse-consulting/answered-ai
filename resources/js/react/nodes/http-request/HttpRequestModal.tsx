@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import DialogContainer from "../../components/DialogContainer";
 import { FormField } from "../../components/ui/FormField";
 import { SelectField } from "../../components/ui/SelectField";
@@ -6,345 +6,529 @@ import { TextareaField } from "../../components/ui/TextareaField";
 import { CheckboxField } from "../../components/ui/CheckboxField";
 import { KeyValueEditor } from "../../components/ui/KeyValueEditor";
 import { CustomButton as Button } from "../../components/ui/Button";
-import { useHttpRequestData } from "./useHttpRequestData";
 import { HTTP_METHODS, AUTH_TYPES } from "../../types";
 import { useReactFlow } from "@xyflow/react";
-import { HttpConfig } from "./types";
+import { HttpConfig, HttpConfigSchema } from "./types";
+import { useForm, Controller, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 interface HttpRequestModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  nodeId?: string;
-  initialConfig?: HttpConfig;
+    isOpen: boolean;
+    onClose: () => void;
+    nodeId?: string;
+    initialConfig?: HttpConfig;
 }
 
 export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
-  isOpen,
-  onClose,
-  nodeId,
-  initialConfig,
+    isOpen,
+    onClose,
+    nodeId,
+    initialConfig,
 }) => {
-  const { updateNodeData, getNode } = useReactFlow();
-  const [error, setError] = React.useState<string | null>(null);
-  const [response, setResponse] = React.useState<any | null>(null);
-  const [isLoading, setIsLoading] = React.useState(false);
+    const { updateNodeData } = useReactFlow();
+    const [error, setError] = React.useState<string | null>(null);
+    const [response, setResponse] = React.useState<any | null>(null);
+    const [isLoading, setIsLoading] = React.useState(false);
 
-  const {
-    config,
-    updateMethod,
-    updateUrl,
-    addQueryParam,
-    updateQueryParam,
-    removeQueryParam,
-    addHeader,
-    updateHeader,
-    removeHeader,
-    updateAuth,
-    updateAuthCredentials,
-    updateBody,
-    updateOptions,
-    validateConfig,
-    isValid,
-  } = useHttpRequestData(initialConfig);
+    const {
+        control,
+        handleSubmit,
+        reset,
+        watch,
+        setValue,
+        formState: { errors, isValid },
+    } = useForm<HttpConfig>({
+        resolver: zodResolver(HttpConfigSchema),
+        defaultValues: initialConfig ?? {
+            method: "GET",
+            url: "",
+            queryParams: [],
+            headers: [],
+            body: undefined,
+            auth: { type: "none" },
+            options: {
+                followRedirects: true,
+                verifySSL: true,
+            },
+        },
+    });
 
-  const handleSave = async () => {
-    if (!isValid || !nodeId) return;
-
-    setError(null);
-    setIsLoading(true);
-
-    try {
-      const queryString = config.queryParams?.length
-        ? "?" +
-          config.queryParams
-            .map(
-              (p) =>
-                `${encodeURIComponent(p.key)}=${encodeURIComponent(p.value)}`,
-            )
-            .join("&")
-        : "";
-
-      const headers =
-        config.headers?.reduce((acc: Record<string, string>, h) => {
-          if (h.key && h.value) acc[h.key] = h.value;
-          return acc;
-        }, {}) || {};
-
-      let options: RequestInit = {
-        method: config.method,
-        headers,
-      };
-
-      if (
-        ["POST", "PUT", "PATCH", "DELETE"].includes(config.method.toUpperCase())
-      ) {
-        options.body = config.body?.content || null;
-        if (config.body?.contentType) {
-          options.headers = {
-            ...options.headers,
-            "Content-Type": config.body.contentType,
-          };
+    const updateBody = (contentType: string, content?: string) => {
+        if (contentType === "none") {
+            setValue("body", undefined); // remove body
+        } else {
+            setValue("body", {
+                contentType,
+                content: content ?? watch("body.content") ?? "",
+            });
         }
-      }
+    };
 
-      const url = config.url + queryString;
-      const response = await fetch(url, options);
-      const data = await response.json();
+    const { fields, append, remove, update } = useFieldArray({
+        control,
+        name: "queryParams",
+    });
+    // Add
+    const addQueryParam = () => {
+        append({ key: "", value: "" });
+    };
 
-      if (!response.ok) {
-        throw new Error(
-          data.message || `Request failed with status ${response.status}`,
-        );
-      }
+    // Update
+    const updateQueryParam = (
+        index: number,
+        field: "key" | "value",
+        value: string
+    ) => {
+        const item = fields[index];
+        update(index, { ...item, [field]: value });
+    };
 
-      // Update node data and response state
-      const updatedData = {
-        httpConfig: config,
-      };
+    // Remove
+    const removeQueryParam = (index: number) => {
+        remove(index);
+    };
+    const {
+        fields: headerFields,
+        append: appendHeader,
+        update: updateHeader,
+        remove: removeHeader,
+    } = useFieldArray({
+        control,
+        name: "headers",
+    });
 
-      const currentData = getNode(nodeId);
+    // Add
+    const addHeader = () => {
+        appendHeader({ key: "", value: "" });
+    };
 
-      updateNodeData(nodeId, {
-        ...currentData!!.data,
-        metadata: config,
-      });
-      setResponse(data); // Update local state too
-    } catch (error: any) {
-      setError(error.message || "An error occurred while making the request");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    // Update
+    const handleUpdateHeader = (
+        index: number,
+        field: "key" | "value",
+        value: string
+    ) => {
+        const item = headerFields[index];
+        updateHeader(index, { ...item, [field]: value });
+    };
 
-  const methodOptions = [
-    { value: HTTP_METHODS.GET, label: "GET" },
-    { value: HTTP_METHODS.POST, label: "POST" },
-    { value: HTTP_METHODS.PUT, label: "PUT" },
-    { value: HTTP_METHODS.DELETE, label: "DELETE" },
-    { value: HTTP_METHODS.PATCH, label: "PATCH" },
-  ];
+    // Remove
+    const handleRemoveHeader = (index: number) => {
+        removeHeader(index);
+    };
 
-  const authOptions = [
-    { value: AUTH_TYPES.NONE, label: "No Authentication" },
-    { value: AUTH_TYPES.BASIC, label: "Basic Auth" },
-    { value: AUTH_TYPES.BEARER, label: "Bearer Token" },
-  ];
+    const handleSave = async (data: HttpConfig) => {
+        if (!nodeId) return;
 
-  const bodyTypeOptions = [
-    { value: "none", label: "No Body" },
-    { value: "application/json", label: "JSON" },
-    { value: "application/x-www-form-urlencoded", label: "Form URL Encoded" },
-    { value: "multipart/form-data", label: "Form Data" },
-    { value: "text/plain", label: "Raw" },
-  ];
+        setError(null);
+        setIsLoading(true);
 
-  const errors = validateConfig();
+        try {
+            const queryString = data.queryParams?.length
+                ? "?" +
+                  data.queryParams
+                      .map(
+                          (p) =>
+                              `${encodeURIComponent(
+                                  p.key
+                              )}=${encodeURIComponent(p.value)}`
+                      )
+                      .join("&")
+                : "";
 
-  return (
-    <DialogContainer
-      isOpen={isOpen}
-      onClose={onClose}
-      title="HTTP Request Configuration"
-      description="Configure your HTTP request parameters"
-      maxWidth="2xl"
-      footer={
-        <div className="flex justify-end gap-3 ">
-          <Button variant="secondary" onClick={onClose}>
-            Close
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleSave}
-            disabled={!isValid}
-            isLoading={isLoading}>
-            Execute
-          </Button>
-        </div>
-      }>
-      <div className="space-y-6">
-        {/* API Error */}
-        {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
-              Request Failed
-            </h4>
-            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
-          </div>
-        )}
+            const headers =
+                data.headers?.reduce((acc: Record<string, string>, h) => {
+                    if (h.key && h.value) acc[h.key] = h.value;
+                    return acc;
+                }, {}) || {};
 
-        {/* Validation Errors */}
-        {errors.length > 0 && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
-              Please fix the following errors:
-            </h4>
-            <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
-              {errors.map((error, index) => (
-                <li key={index}>• {error}</li>
-              ))}
-            </ul>
-          </div>
-        )}
+            let options: RequestInit = {
+                method: data.method,
+                headers,
+            };
 
-        {/* Basic Configuration */}
-        <div className="grid grid-cols-4 gap-4">
-          <div className="col-span-1">
-            <SelectField
-              label="Method"
-              value={config.method}
-              onChange={(value) => updateMethod(value as HttpConfig["method"])}
-              options={methodOptions}
-              required
-              placeholder={""}
-              error={""}
-            />
-          </div>
-          <div className="col-span-3">
-            <FormField
-              label="URL"
-              value={config.url}
-              onChange={updateUrl}
-              placeholder="https://api.example.com/endpoint"
-              type="url"
-              required
-              error={""}
-            />
-          </div>
-        </div>
-
-        {/* Query Parameters */}
-        <KeyValueEditor
-          label="Query Parameters"
-          items={config.queryParams}
-          onAdd={addQueryParam}
-          onUpdate={updateQueryParam}
-          onRemove={removeQueryParam}
-          keyPlaceholder="Parameter name"
-          valuePlaceholder="Parameter value"
-        />
-
-        {/* Headers */}
-        <KeyValueEditor
-          label="Headers"
-          items={config.headers}
-          onAdd={addHeader}
-          onUpdate={updateHeader}
-          onRemove={removeHeader}
-          keyPlaceholder="Header name"
-          valuePlaceholder="Header value"
-        />
-
-        {/* Authentication */}
-        <div className="space-y-4">
-          <SelectField
-            label="Authentication"
-            value={config.auth.type}
-            onChange={(value) =>
-              updateAuth(value as HttpConfig["auth"]["type"])
+            if (
+                ["POST", "PUT", "PATCH", "DELETE"].includes(
+                    data.method.toUpperCase()
+                )
+            ) {
+                options.body = data.body?.content || null;
+                if (data.body?.contentType) {
+                    options.headers = {
+                        ...options.headers,
+                        "Content-Type": data.body.contentType,
+                    };
+                }
             }
-            options={authOptions}
-            placeholder={""}
-            error={""}
-          />
 
-          {config.auth.type === AUTH_TYPES.BASIC && (
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                label="Username"
-                value={config.auth.username || ""}
-                onChange={(value) => updateAuthCredentials("username", value)}
-                placeholder="Enter username"
-                required
-                error={""}
-              />
-              <FormField
-                label="Password"
-                value={config.auth.password || ""}
-                onChange={(value) => updateAuthCredentials("password", value)}
-                placeholder="Enter password"
-                type="password"
-                required
-                error={""}
-              />
-            </div>
-          )}
+            const url = data.url + queryString;
+            const response = await fetch(url, options);
+            const result = await response.json();
 
-          {config.auth.type === AUTH_TYPES.BEARER && (
-            <FormField
-              label="Bearer Token"
-              value={config.auth.token || ""}
-              onChange={(value) => updateAuthCredentials("token", value)}
-              placeholder="Enter bearer token"
-              required
-              error={""}
-            />
-          )}
-        </div>
+            if (!response.ok) {
+                throw new Error(
+                    result.message ||
+                        `Request failed with status ${response.status}`
+                );
+            }
 
-        {/* Body Content */}
-        {config.method !== HTTP_METHODS.GET && (
-          <div className="space-y-4">
-            <SelectField
-              label="Request Body"
-              value={config.body?.contentType || "none"}
-              onChange={(value) => updateBody(value)}
-              options={bodyTypeOptions}
-              placeholder={""}
-              error={""}
-            />
+            updateNodeData(nodeId, (currentData) => {
+                return {
+                    ...currentData.data,
+                    metadata: data,
+                    result,
+                    executionStatus: "Completed",
+                };
+            });
+            setResponse(result); // Update local state too
+        } catch (error: any) {
+            setError(
+                error.message || "An error occurred while making the request"
+            );
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-            {config.body && (
-              <TextareaField
-                label="Body Content"
-                value={config.body.content}
-                onChange={(value) =>
-                  updateBody(config.body?.contentType || "", value)
+    useEffect(() => {
+        if (isOpen) {
+            reset(
+                initialConfig || {
+                    method: "GET",
+                    url: "",
+                    queryParams: [],
+                    headers: [],
+                    body: undefined,
+                    auth: { type: "none" },
+                    options: {
+                        followRedirects: true,
+                        verifySSL: true,
+                    },
                 }
-                placeholder={
-                  config.body.contentType === "application/json"
-                    ? '{\n  "key": "value"\n}'
-                    : "Enter request body"
-                }
-                rows={5}
-                error={""}
-              />
-            )}
-          </div>
-        )}
+            );
+        }
+    }, [isOpen, initialConfig, reset]);
 
-        {/* Options */}
-        <div className="space-y-4">
-          <h4 className="text-sm font-medium text-gray-300">Request Options</h4>
-          <div className="space-y-3">
-            <CheckboxField
-              label="Follow redirects"
-              checked={config.options.followRedirects}
-              onChange={(checked) => updateOptions("followRedirects", checked)}
-              description="Automatically follow HTTP redirects"
-            />
-            <CheckboxField
-              label="Verify SSL certificates"
-              checked={config.options.verifySSL}
-              onChange={(checked) => updateOptions("verifySSL", checked)}
-              description="Verify SSL certificates for HTTPS requests"
-            />
-          </div>
-        </div>
+    const methodOptions = [
+        { value: HTTP_METHODS.GET, label: "GET" },
+        { value: HTTP_METHODS.POST, label: "POST" },
+        { value: HTTP_METHODS.PUT, label: "PUT" },
+        { value: HTTP_METHODS.DELETE, label: "DELETE" },
+        { value: HTTP_METHODS.PATCH, label: "PATCH" },
+    ];
 
-        {/* Response Section */}
-        {response && (
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Response
-            </h4>
-            <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-              <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                {JSON.stringify(response, null, 2)}
-              </pre>
+    const authOptions = [
+        { value: AUTH_TYPES.NONE, label: "No Authentication" },
+        { value: AUTH_TYPES.BASIC, label: "Basic Auth" },
+        { value: AUTH_TYPES.BEARER, label: "Bearer Token" },
+    ];
+
+    const bodyTypeOptions = [
+        { value: "none", label: "No Body" },
+        { value: "application/json", label: "JSON" },
+        {
+            value: "application/x-www-form-urlencoded",
+            label: "Form URL Encoded",
+        },
+        { value: "multipart/form-data", label: "Form Data" },
+        { value: "text/plain", label: "Raw" },
+    ];
+
+    // const errors = validateConfig();
+
+    return (
+        <DialogContainer
+            isOpen={isOpen}
+            onClose={onClose}
+            title="HTTP Request Configuration"
+            description="Configure your HTTP request parameters"
+            maxWidth="2xl"
+        >
+            <div className="space-y-6">
+                <form onSubmit={handleSubmit(handleSave)}>
+                    {/* API Error */}
+                    {error && (
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                            <h4 className="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
+                                Request Failed
+                            </h4>
+                            <p className="text-sm text-red-700 dark:text-red-300">
+                                {error}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Validation Errors */}
+                    {/* {errors.length > 0 && (
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                        <h4 className="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
+                            Please fix the following errors:
+                        </h4>
+                        <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
+                            {errors.map((error, index) => (
+                                <li key={index}>• {error}</li>
+                            ))}
+                        </ul>
+                    </div>
+                )} */}
+
+                    {/* Basic Configuration */}
+                    <div className="grid grid-cols-4 gap-4">
+                        <div className="col-span-1">
+                            <Controller
+                                name="method"
+                                control={control}
+                                render={({ field }) => (
+                                    <SelectField
+                                        label="Method"
+                                        {...field}
+                                        options={methodOptions}
+                                        required
+                                        placeholder={""}
+                                        error={""}
+                                    />
+                                )}
+                            />
+                        </div>
+                        <div className="col-span-3">
+                            <Controller
+                                name="url"
+                                control={control}
+                                render={({ field, fieldState }) => (
+                                    <FormField
+                                        label="URL"
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        placeholder="https://api.example.com/endpoint"
+                                        type="url"
+                                        required
+                                        error={fieldState.error?.message || ""}
+                                    />
+                                )}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Query Parameters */}
+                    <Controller
+                        name="queryParams"
+                        control={control}
+                        render={({ field }) => (
+                            <KeyValueEditor
+                                label="Query Parameters"
+                                items={field.value}
+                                onAdd={addQueryParam}
+                                onUpdate={updateQueryParam}
+                                onRemove={removeQueryParam}
+                                keyPlaceholder="Parameter name"
+                                valuePlaceholder="Parameter value"
+                            />
+                        )}
+                    />
+
+                    {/* Headers */}
+                    <Controller
+                        name="headers"
+                        control={control}
+                        render={({}) => (
+                            <KeyValueEditor
+                                label="Headers"
+                                items={headerFields}
+                                onAdd={addHeader}
+                                onUpdate={handleUpdateHeader}
+                                onRemove={handleRemoveHeader}
+                                keyPlaceholder="Header name"
+                                valuePlaceholder="Header value"
+                            />
+                        )}
+                    />
+
+                    {/* Authentication */}
+                    <div className="space-y-4">
+                        <Controller
+                            name="auth.type"
+                            control={control}
+                            render={({ field, fieldState }) => (
+                                <SelectField
+                                    label="Authentication"
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    options={authOptions}
+                                    placeholder=""
+                                    error={fieldState.error?.message || ""}
+                                />
+                            )}
+                        />
+
+                        {watch("auth.type") === AUTH_TYPES.BASIC && (
+                            <div className="grid grid-cols-2 gap-4">
+                                <Controller
+                                    name="auth.username"
+                                    control={control}
+                                    render={({ field, fieldState }) => (
+                                        <FormField
+                                            label="Username"
+                                            value={field.value || ""}
+                                            onChange={field.onChange}
+                                            placeholder="Enter username"
+                                            required
+                                            error={
+                                                fieldState.error?.message || ""
+                                            }
+                                        />
+                                    )}
+                                />
+                                <Controller
+                                    name="auth.password"
+                                    control={control}
+                                    render={({ field, fieldState }) => (
+                                        <FormField
+                                            label="Password"
+                                            value={field.value || ""}
+                                            onChange={field.onChange}
+                                            placeholder="Enter password"
+                                            type="password"
+                                            required
+                                            error={
+                                                fieldState.error?.message || ""
+                                            }
+                                        />
+                                    )}
+                                />
+                            </div>
+                        )}
+
+                        {watch("auth.type") === AUTH_TYPES.BEARER && (
+                            <Controller
+                                name="auth.token"
+                                control={control}
+                                render={({ field, fieldState }) => (
+                                    <FormField
+                                        label="Bearer Token"
+                                        value={field.value || ""}
+                                        onChange={field.onChange}
+                                        placeholder="Enter bearer token"
+                                        required
+                                        error={fieldState.error?.message || ""}
+                                    />
+                                )}
+                            />
+                        )}
+                    </div>
+
+                    {/* Body Content */}
+                    {watch("method") !== HTTP_METHODS.GET && (
+                        <div className="space-y-4">
+                            <Controller
+                                name="body.contentType"
+                                control={control}
+                                render={({ field, fieldState }) => (
+                                    <SelectField
+                                        label="Request Body"
+                                        value={field.value || "none"}
+                                        onChange={(value) => updateBody(value)} // RHF-friendly helper
+                                        options={bodyTypeOptions}
+                                        placeholder=""
+                                        error={fieldState.error?.message || ""}
+                                    />
+                                )}
+                            />
+
+                            {watch("body") && (
+                                <Controller
+                                    name="body.content"
+                                    control={control}
+                                    render={({ field, fieldState }) => (
+                                        <TextareaField
+                                            label="Body Content"
+                                            value={field.value || ""}
+                                            onChange={(value) =>
+                                                updateBody(
+                                                    watch("body.contentType") ||
+                                                        "",
+                                                    value
+                                                )
+                                            }
+                                            placeholder={
+                                                watch("body.contentType") ===
+                                                "application/json"
+                                                    ? '{\n  "key": "value"\n}'
+                                                    : "Enter request body"
+                                            }
+                                            rows={5}
+                                            error={
+                                                fieldState.error?.message || ""
+                                            }
+                                        />
+                                    )}
+                                />
+                            )}
+                        </div>
+                    )}
+
+                    {/* Options */}
+                    <div className="space-y-4">
+                        <h4 className="text-sm font-medium text-gray-300">
+                            Request Options
+                        </h4>
+                        <div className="space-y-3">
+                            <Controller
+                                name="options.followRedirects"
+                                control={control}
+                                render={({ field }) => (
+                                    <CheckboxField
+                                        label="Follow redirects"
+                                        checked={field.value ?? false}
+                                        onChange={field.onChange}
+                                        description="Automatically follow HTTP redirects"
+                                    />
+                                )}
+                            />
+                            <Controller
+                                name="options.verifySSL"
+                                control={control}
+                                render={({ field }) => (
+                                    <CheckboxField
+                                        label="Verify SSL certificates"
+                                        checked={field.value ?? true}
+                                        onChange={field.onChange}
+                                        description="Verify SSL certificates for HTTPS requests"
+                                    />
+                                )}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Response Section */}
+                    {response && (
+                        <div className="space-y-2">
+                            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Response
+                            </h4>
+                            <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                                    {JSON.stringify(response, null, 2)}
+                                </pre>
+                            </div>
+                        </div>
+                    )}
+                    <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 mt-5">
+                        <div className="flex justify-end gap-3 ">
+                            <Button variant="secondary" onClick={onClose}>
+                                Close
+                            </Button>
+                            <Button
+                                variant="primary"
+                                type="submit"
+                                disabled={!isValid}
+                                isLoading={isLoading}
+                            >
+                                Execute
+                            </Button>
+                        </div>
+                    </div>
+                </form>
             </div>
-          </div>
-        )}
-      </div>
-    </DialogContainer>
-  );
+        </DialogContainer>
+    );
 };
