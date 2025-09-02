@@ -1,17 +1,17 @@
 import { Edge, Node } from "@xyflow/react";
+import { NodeType } from "../types";
 
-export function createNodeStructured(nodes: Node[], edges: Edge[]) {
-  
-  
-  const nodesWithMetadata = nodes.map((node) => {
-    return {
-      id: node.id,
-      type: node.type,
-      data: node.data.metadata
-    }
-  })
+export function createNodeStructured(nodes: NodeType[], edges: Edge[]) {
 
-  return {nodes: nodesWithMetadata, edges}
+     const allData = nodes.map((it) => ({
+      id: it.id,
+      type: it.type,
+      name: it.data.view.name,
+      data: it.data.result,
+  }));
+  
+
+  return {nodes: allData, edges}
 
   const structuredNodes = nodes.map((node) => {
     const nodeId = node.id;

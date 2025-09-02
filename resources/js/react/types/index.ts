@@ -1,14 +1,16 @@
 import { Node } from "@xyflow/react";
 import React from "react";
+import {z} from "zod";
 
 export type ExecutionStatus = 'Pending' | 'Running' | 'Completed' | 'Failed';
 
 export type RecordUnknown = Record<string, unknown>;
 
-export interface BaseNodeData<T extends RecordUnknown> extends RecordUnknown {
+export interface BaseNodeData<T extends RecordUnknown = RecordUnknown> extends RecordUnknown {
   view: NodeView;
   executionStatus?: ExecutionStatus;
   metadata: T;
+  result: any
 }
 
 export interface NodeView {
@@ -17,42 +19,73 @@ export interface NodeView {
   description: string;
   color: string;
   type: NodeTypes;
+  name: string
 }
 
+
+export const KeyValuePairSchema = z.object({
+  key: z.string(),
+  value: z.string()
+})
 
 export type NodeTypes = 'trigger' | 'httpRequest' | 'notification' | 'crm' | 'condition';
 
 export interface NodeType extends Node<BaseNodeData<RecordUnknown>, NodeTypes> {}
 
 // Notification Configuration
-export interface NotificationConfig extends RecordUnknown {
-  type: 'email' | 'slack' | 'sms' | 'webhook';
-  recipients: KeyValuePair[];
-  subject?: string;
-  message: string;
-  template?: string;
-  enableLogging?: boolean;
-  autoRetry?: boolean;
-}
+// export interface NotificationConfig extends RecordUnknown {
+//   type: 'email' | 'slack' | 'sms' | 'webhook';
+//   recipients: KeyValuePair[];
+//   subject?: string;
+//   message: string;
+//   template?: string;
+//   enableLogging?: boolean;
+//   autoRetry?: boolean;
+// }
 
-// CRM Configuration
-export interface CrmConfig extends RecordUnknown {
-  provider: 'hubspot' | 'salesforce' | 'pipedrive' | 'zoho';
-  action: 'create' | 'update' | 'get' | 'delete' | 'search';
-  object: 'contact' | 'company' | 'deal' | 'ticket' | 'product';
-  fields: KeyValuePair[];
-  apiKey: string;
-  enableLogging: boolean;
-  autoRetry: boolean;
-}
+export const NotificationConfigSchema = z.object({
+  type: z.enum(['email', 'slack', 'sms', 'webhook']),
+  recipients: z.array(KeyValuePairSchema),
+  subject: z.string().optional(),
+  message: z.string().min(1, "Message is required"),
+  template: z.string().optional(),
+  enableLogging: z.boolean().optional(),
+  autoRetry: z.boolean().optional()
+})
 
-// Condition Configuration
-export interface ConditionConfig extends RecordUnknown {
-  operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains';
-  leftValue: string;
-  rightValue: string;
-  dataType: 'string' | 'number' | 'boolean';
-}
+export type NotificationConfig = z.infer<typeof NotificationConfigSchema>
+
+
+
+export const CrmConfigSchema = z.object({
+  provider: z.enum(['hubspot', 'salesforce', 'pipedrive', 'zoho']),
+  action: z.enum(['create', 'update', 'get', 'delete', 'search']),
+  object: z.enum(['contact', 'company', 'deal', 'ticket', 'product']),
+  fields: z.array(KeyValuePairSchema),
+  apiKey: z.string().min(1, "API Key is required"),
+  enableLogging: z.boolean(),
+  autoRetry: z.boolean()
+})
+
+export type CrmConfig = z.infer<typeof CrmConfigSchema>
+
+export const conditionConfigSchema = z.object({
+  leftValue: z.string().min(1, "Left value is required"),
+  rightValue: z.string().min(1, "Right value is required"),
+  operator: z.object({
+    type: z.enum(["string", "number", "boolean"]),
+    operation: z.enum([
+      "equals",
+      "not_equals",
+      "greater_than",
+      "less_than",
+      "contains",
+    ]),
+  }),
+});
+
+// Infer TS type from Zod
+export type ConditionConfig = z.infer<typeof conditionConfigSchema>;
 
 export interface NotificationNodeData extends BaseNodeData<NotificationConfig> {}
 
@@ -68,9 +101,12 @@ export interface KeyValuePair {
   value: string;
 }
 
+
+
 // Node menu item for sidebar
 export interface NodeMenuItem {
   label: string;
+  name?: string;
   icon: React.ReactNode;
   description: string;
   color: string;

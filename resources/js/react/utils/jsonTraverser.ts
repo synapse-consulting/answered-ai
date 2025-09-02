@@ -1,3 +1,5 @@
+import { Italic } from "lucide-react";
+
 type JsonValue = string | number | boolean | null | JsonObject | JsonArray;
 interface JsonObject {
   [key: string]: JsonValue;
@@ -80,4 +82,59 @@ export const getJsonSuggestions = (responses: Record<string, string>): Suggestio
   });
   
   return suggestions;
+};
+
+
+export const getNodeSuggestions = (
+  sourceNodes: {name: any, data: any}[]
+): Suggestion[] => {
+  const suggestions = sourceNodes
+  .filter((it) => it.data)
+  .map((sourceNode) => {
+
+    const response = sourceNode.data;
+    const nodeName = sourceNode.name;
+    // console.log(nodeName);
+
+    if (!response) {
+      return {
+        label: nodeName,
+        value: nodeName,
+        type: "node",
+        children: [],
+      }
+    }
+
+    let responseChildren: Suggestion[] = [];
+
+    // Case 1: Array of objects
+    if (Array.isArray(response)) {
+      responseChildren = response.map((item, index) => ({
+        label: `response_${index + 1}`,
+        value: `response_${index + 1}`,
+        type: "node",
+        children: traverseJson(item),
+      }));
+    }
+    // Case 2: Single object
+    else if (typeof response === "object") {
+      responseChildren = [
+        {
+          label: "response",
+          value: "response",
+          type: "node",
+          children: traverseJson(response),
+        },
+      ];
+    }
+
+    return {
+      label: nodeName,
+      value: nodeName,
+      type: "node",
+      children: responseChildren,
+    }
+  })
+
+  return suggestions
 };

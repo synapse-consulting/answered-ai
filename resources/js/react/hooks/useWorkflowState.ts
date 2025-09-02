@@ -14,7 +14,9 @@ const initialNodes: NodeType[] = [
     position: { x: 250, y: 50 },
     type: NODE_TYPES.TRIGGER,
     data: {
+      result: null,
       view: {
+        name: "Initial Node",
         label: "Trigger Flow",
         color: "#555555",
         icon: null,
