@@ -29,7 +29,7 @@ Route::get('/menus', [MenuController::class, 'list'])->name('api.menus.list');
 // Order Routes
 Route::post('/orders', [OrderController::class, 'store'])->name('api.orders.store');
 Route::get('/orders/{orderId}', [OrderController::class, 'show'])->name('api.orders.show');
-Route::resource('credentials', CredentialController::class);  
+// Route::resource('credentials', CredentialController::class);  
 Route::resource('workflows', WorkflowController::class);  
 
 Route::group(['prefix' => 'integrations'], function () {

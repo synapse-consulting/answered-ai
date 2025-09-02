@@ -32,6 +32,10 @@
                                         <td x-text="workflow.name"></td>
                                         <td x-text="workflow.description"></td>
                                         <td>
+                                              <!-- Use Alpine for dynamic href -->
+                                            <a class="btn bg-gray-800 hover:bg-gray-900 text-white inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white transition rounded-lg shadow-theme-xs" :href="`/workflows/${workflow.id}/edit`" class="btn btn-primary">
+                                                <i class="fa fa-project-diagram"></i>
+                                            </a>
                                             <x-button @click="openEditModal(workflow)" class="btn-primary">
                                                 <i class="fa fa-edit"></i>
                                             </x-button>
@@ -160,6 +164,8 @@
                             ...this.form,
                             id: data.id
                         });
+
+                        window.location.href="workflows/" + data.id;
                         
                         this.showCreateModal = false;
                         
