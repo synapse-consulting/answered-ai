@@ -7,12 +7,25 @@ use App\Http\Requests\WorkflowRequest;
 use Illuminate\Http\Request;
 use App\Models\Credential;
 use App\Models\Workflow;
-
+use App\Enums\IntegrationTypeEnum;
+use App\Http\Requests\GetWorkflowsRequest;
+use App\Services\WorkflowService;
 class WorkflowController extends Controller
 {
-    public function index()
+
+    private $workflowService;
+    
+    function __construct(WorkflowService $workflowService){
+        $this->workflowService = $workflowService;
+    }
+
+    public function index(GetWorkflowsRequest $request)
     {
-       $workflows = Workflow::get();
+       $type = $request->type ?? IntegrationTypeEnum::WHATSAPP; 
+       $integrationId = $request->integration_id ?? null;  
+
+       $workflows = $this->workflowService->getWorkflowByType($type, $integrationId); 
+
        return response()->json(['workflows' => $workflows]);
     }
 

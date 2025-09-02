@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CredentialRequest;
 use Illuminate\Http\Request;
 use App\Models\Credential;
 
@@ -16,14 +17,9 @@ class CredentialController extends Controller
     }
 
     
-    public function store(Request $request)
+    public function store(CredentialRequest $request)
     {
-        $validated = $request->validate([
-            'name'        => 'required|string|max:255',
-            'configuration' => 'required|array',
-        ]);
-
-        $credential = Credential::create($validated);
+        $credential = Credential::create($request->validated());
 
         return response()->json([
             'message' => 'Credential created successfully.',
@@ -37,15 +33,10 @@ class CredentialController extends Controller
     }
 
   
-    public function update(Request $request, Credential $credential)
+    public function update(CredentialRequest $request, Credential $credential)
     {
-        $validated = $request->validate([
-            'name'        => 'sometimes|required|string|max:255',
-            'configuration' => 'sometimes|required|array',
-            'company_id'  => 'sometimes|required|exists:companies,id',
-        ]);
 
-        $credential->update($validated);
+        $credential->update($request->validated());
 
         return response()->json([
             'message' => 'Credential updated successfully.',
