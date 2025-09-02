@@ -10,10 +10,11 @@ class Workflow extends Model
 {
     use HasFactory, HasCompany;
 
-    protected $fillable = ['company_id', 'name', 'executable_flow', 'intent_id']; 
+    protected $fillable = ['company_id', 'name', 'executable_flow', 'system_flow', 'description']; 
 
     protected $casts = [
-        'executable_flow' => 'array'
+        'executable_flow' => 'array', 
+        'system_flow' => 'array'
     ]; 
 
     function intent(){

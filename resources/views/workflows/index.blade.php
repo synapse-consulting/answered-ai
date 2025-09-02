@@ -1,56 +1,232 @@
 @extends('layouts.app')
 @section('title', 'Workflows')
 @section('content')
-    <div class="p-4 mt-4 card">
-        
-        <!-- Heading with Icon and Button -->
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center space-x-2">
-                <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Workflows</h2>
+    <div class="grid grid-cols-12" x-data="workflows" x-init="$nextTick(() => { showEditModal = false;
+        showCreateModal = false; })">
+        <div class="col-span-12">
+            <div class="flex h-screen text-white">
+
+                <div class="h-screen flex-1 overflow-y-auto dark-scrollbar bg-white">
+                    <x-card>
+                        <div class="flex items-center justify-between pb-6 border-b border-gray-200">
+                            <div>
+                                <h1 class="text-left text-xl font-semibold text-gray-800">Workflows</h1>
+                                <p class="text-sm text-gray-500">Manage your workflows</p>
+                            </div>
+                            <x-button @click="openCreateModal" type="button" class="btn-primary">
+                                Create Workflow
+                            </x-button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <x-table>
+                                <x-slot name="header">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </x-slot>
+
+                                <template x-for="workflow in workflows" :key="workflow.id">
+                                    <tr>
+                                        <td x-text="workflow.name"></td>
+                                        <td x-text="workflow.description"></td>
+                                        <td>
+                                            <x-button @click="openEditModal(workflow)" class="btn-primary">
+                                                <i class="fa fa-edit"></i>
+                                            </x-button>
+                                            <x-button @click="deleteWorkflow(workflow.id)" class="btn-danger">
+                                                <i class="fa fa-trash"></i>
+                                            </x-button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </x-table>
+                        </div>
+                    </x-card>
+                </div>
             </div>
-            <x-button href="{{ route('workflows.create') }}">
-                + Create Workflow
-            </x-button>
         </div>
 
-        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                    <tr>
-                        <th scope="col" class="px-6 py-3">
-                            Name
-                        </th>
-                        <th scope="col" class="px-6 py-3">
-                            Intent
-                        </th>
-                        <th scope="col" class="px-6 py-3">
-                            Status
-                        </th>
-                        <th scope="col" class="px-6 py-3">
-                            Action
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($workflows as $workflow)
-                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">
-                       <td class="px-6 py-4"> {{ $workflow->name }} </td>
-                       <td class="px-6 py-4"> {{ $workflow?->intent?->name ?? 'No Intent Attached' }} </td>
-                       <td class="px-6 py-4"> {{ $workflow->status == true ? 'Active' : 'In-Active' }} </td>
-                       <td class="px-6 py-4">
-                            <x-button href="{{ route('workflows.edit', $workflow->id) }}"><i class="fa fa-edit"></i></x-button>
-                            <form action="{{ route('workflows.destroy', $workflow->id) }}" method="POST" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <x-button type="submit" btntype="btn-danger" onclick="return confirm('Are you sure you want to delete this workflow?')">
-                                    <i class="fa fa-trash"></i>
-                                </x-button>
-                            </form>
-                       </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+        <!-- Create Modal -->
+        <template x-if="showCreateModal">
+            <x-modal id="createWorkflowModal" x-show="showCreateModal" x-cloak @click.away="showCreateModal = false">
+                <x-slot name="header">
+                    <h3 class="text-lg font-semibold text-gray-800">Create Workflow</h3>
+                </x-slot>
+                <form @submit.prevent="createWorkflow">
+                    <div class="space-y-4">
+                        <div>
+                            <x-input label="Name" required type="text" name="name" x-model="form.name"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                placeholder="Enter name" required validate="name" />
+                        </div>
+                        <div>
+                            <x-textarea label="Description" required name="description" x-model="form.description"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                placeholder="Enter description" required validate="description"></x-textarea>
+                        </div>
+                        <div class="flex justify-end space-x-3">
+                            <x-button @click="showCreateModal = false" type="button"
+                                class="btn-secondary">Cancel</x-button>
+                            <x-button type="submit" class="btn-primary">Create</x-button>
+                        </div>
+                    </div>
+                </form>
+            </x-modal>
+        </template>
+
+        <!-- Edit Modal -->
+        <template x-if="showEditModal">
+            <x-modal id="editWorkflowModal" x-show="showEditModal" x-cloak @click.away="showEditModal = false">
+                <x-slot name="header">
+                    <h3 class="text-lg font-semibold text-gray-800">Edit Workflow</h3>
+                </x-slot>
+                <form @submit.prevent="updateWorkflow">
+                    <div class="space-y-4">
+                        <div>
+                            <x-input label="Name" name="name" type="text" x-model="form.name"
+                                placeholder="Enter name" required />
+                        </div>
+                        <div>
+                            <x-textarea name="description" label="Description" x-model="form.description"
+                                placeholder="Enter Description" required></x-textarea>
+                        </div>
+                        <div class="flex justify-end space-x-3">
+                            <x-button @click="showEditModal = false" type="button"
+                                btntype="btn-secondary">Cancel</x-button>
+                            <x-button type="submit" class="btn-primary">Update</x-button>
+                        </div>
+                    </div>
+                </form>
+            </x-modal>
+        </template>
     </div>
+@endsection
+
+@section('scripts')
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('workflows', () => ({
+                workflows: @json($workflows),
+                showCreateModal: false,
+                showEditModal: false,
+                form: {
+                    id: '',
+                    name: '',
+                    intent_id: '',
+                    description: ''
+                },
+
+                init() {
+                    this.showEditModal = false;
+                    this.showCreateModal = false;
+                },
+
+                openCreateModal() {
+                    this.form = {
+                        id: null,
+                        name: '',
+                        description: '', 
+                        intent_id: '', 
+                    };
+                    this.showCreateModal = true;
+                },
+
+                openEditModal(intent) {
+                    this.form = {
+                        ...intent
+                    };
+                    this.showEditModal = true;
+                },
+
+                async createWorkflow() {
+                    try {
+                        const response = await fetch('/workflows', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector(
+                                    'meta[name="csrf-token"]').content
+                            },
+                            body: JSON.stringify(this.form)
+                        });
+
+                        if (!response.ok) throw new Error('Failed to create intent');
+
+                        const data = await response.json();
+                        
+                        this.workflows.push({
+                            ...this.form,
+                            id: data.id
+                        });
+                        
+                        this.showCreateModal = false;
+                        
+                        this.form = {
+                            id: null,
+                            name: '',
+                            intent_id: '',
+                            description: ''
+                        };
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Failed to create intent');
+                    }
+                },
+
+                async updateWorkflow() {
+                    try {
+                        const response = await fetch(`/workflows/${this.form.id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector(
+                                    'meta[name="csrf-token"]').content
+                            },
+                            body: JSON.stringify(this.form)
+                        });
+
+                        if (!response.ok) throw new Error('Failed to update intent');
+
+                        const index = this.workflows.findIndex(i => i.id === this.form.id);
+                        this.workflows[index] = {
+                            ...this.form
+                        };
+                        this.showEditModal = false;
+                        this.form = {
+                            id: null,
+                            name: '',
+                            intent_id:'', 
+                            description: ''
+                        };
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Failed to update workflow');
+                    }
+                },
+
+                async deleteWorkflow(id) {
+                    if (!confirm('Are you sure you want to delete this workflow?')) return;
+
+                    try {
+                        const response = await fetch(`/workflows/${id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector(
+                                    'meta[name="csrf-token"]').content
+                            }
+                        });
+
+                        if (!response.ok) throw new Error('Failed to delete workflow');
+
+                        this.workflows = this.workflows.filter(i => i.id !== id);
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Failed to delete workflow');
+                    }
+                }
+            }));
+        });
+    </script>
 @endsection
