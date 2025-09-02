@@ -2,10 +2,9 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\IntegrationEnum;
-use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Http\FormRequest;
 
-class CredentialRequest extends BaseApiRequest
+class GetWorkflowsRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,16 +21,9 @@ class CredentialRequest extends BaseApiRequest
      */
     public function rules(): array
     {
-        $data = [
-            'name' => 'required',
-            'configuration' => 'required|array',
+        return [
+            'type' => 'required|string', 
+            'integration_id' => 'required|string', 
         ];
-
-        if ($this->isMethod('post')) {
-            $data['company_id'] = 'required|integer';
-            $data['type'] = ['required', Rule::in(IntegrationEnum::all())];
-        }
-
-        return $data;
     }
 }

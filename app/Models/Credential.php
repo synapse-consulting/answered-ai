@@ -8,7 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Credential extends Model
 {
-    use HasFactory, HasCompany;
+    use HasFactory;
     
-    protected $fillable = ['name', 'configuration']; 
+    protected $fillable = ['name', 'configuration', 'company_id', 'type']; 
+
+    protected $casts = [
+        'configuration' => 'array'
+    ]; 
 }

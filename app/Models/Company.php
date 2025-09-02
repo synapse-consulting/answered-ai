@@ -22,4 +22,9 @@ class Company extends Model
         return $this->belongsToMany(User::class, 'company_users', 'company_id', 'user_id')
                     ->withTimestamps();
     }
+
+    function workflows(){
+        return $this->hasMany(Workflow::class); 
+        
+    }
 }

@@ -29,4 +29,5 @@ class HomeController extends Controller
     function workflow(){
         return view('layouts/react-app');
     }
+
 }

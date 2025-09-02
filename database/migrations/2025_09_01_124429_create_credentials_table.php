@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('company_id')
             ->constrained('companies')
             ->onDelete('cascade');
+            $table->string('type', 25);
             $table->timestamps();
         });
     }
