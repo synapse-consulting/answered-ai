@@ -14,8 +14,32 @@ const Sidebar = () => {
     const nodes = useNodes<NodeType>();
 
     let nodeIdCounter = Date.now();
-    const onSave = () => {
+    const onSave = async () => {
         const structuredNodes = createNodeStructured(nodes, getEdges());
+        // Example: Fetch data from an API
+
+        try {
+            const response = await fetch(
+                "https://jsonplaceholder.typicode.com/posts",
+                {
+                    method: "PUT", // or "POST", "PUT", "DELETE"
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(structuredNodes),
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log("Fetched data:", data);
+        } catch (error) {
+            console.error("Fetch error:", error);
+        }
+
         console.log("🍪 SIDEBAR.TSX ==> onSave", structuredNodes);
     };
 
