@@ -10,7 +10,7 @@ class Credential extends Model
 {
     use HasFactory;
     
-    protected $fillable = ['name', 'configuration', 'company_id']; 
+    protected $fillable = ['name', 'configuration', 'company_id', 'type']; 
 
     protected $casts = [
         'configuration' => 'array'

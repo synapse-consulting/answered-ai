@@ -2,6 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\IntegrationEnum;
+use Illuminate\Validation\Rule;
+
 class CredentialRequest extends BaseApiRequest
 {
     /**
@@ -21,12 +24,14 @@ class CredentialRequest extends BaseApiRequest
     {
         $data = [
             'name' => 'required',
-            'configuration' => 'required',
+            'configuration' => 'required|array',
         ];
-        
-        if($this->isMethod('post')){
-            $data['company_id'] = 'required|integer'; 
+
+        if ($this->isMethod('post')) {
+            $data['company_id'] = 'required|integer';
+            $data['type'] = ['required', Rule::in(IntegrationEnum::all())];
         }
+
         return $data;
     }
 }

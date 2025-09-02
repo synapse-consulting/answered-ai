@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MetaIntegrationController;
 use App\Http\Controllers\Api\V1\Integrations\ShopifyController;
 use App\Http\Controllers\Api\V1\CredentialController;
+use App\Http\Controllers\Api\V1\IntegrationController;
 use App\Http\Controllers\Api\V1\WorkflowController;
+use App\Http\Controllers\HomeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +33,8 @@ Route::post('/orders', [OrderController::class, 'store'])->name('api.orders.stor
 Route::get('/orders/{orderId}', [OrderController::class, 'show'])->name('api.orders.show');
 Route::resource('credentials', CredentialController::class);  
 Route::resource('workflows', WorkflowController::class);  
+
+Route::post('/integration', [IntegrationController::class, 'integrate'])->name('api.integration');
 
 Route::group(['prefix' => 'integrations'], function () {
     Route::group(['prefix' => 'shopify'], function () {
