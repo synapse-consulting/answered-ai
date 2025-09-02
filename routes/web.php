@@ -39,7 +39,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/chat', [ChatController::class, 'index'])->name('chat');
         Route::get('/chats/{id}', [ChatController::class, 'getMessages'])->name('chats');
 
-        Route::resource('workflow', WorkflowController::class);
+        Route::resource('workflows', WorkflowController::class);
     });
     
     Route::group(['prefix' => 'meta'], function () {

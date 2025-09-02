@@ -32,7 +32,7 @@ Route::get('/menus', [MenuController::class, 'list'])->name('api.menus.list');
 Route::post('/orders', [OrderController::class, 'store'])->name('api.orders.store');
 Route::get('/orders/{orderId}', [OrderController::class, 'show'])->name('api.orders.show');
 Route::resource('credentials', CredentialController::class);  
-Route::resource('workflows', WorkflowController::class);  
+Route::resource('workflow', WorkflowController::class);  
 
 Route::post('/integration', [IntegrationController::class, 'integrate'])->name('api.integration');
 
