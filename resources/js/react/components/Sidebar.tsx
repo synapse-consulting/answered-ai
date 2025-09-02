@@ -19,7 +19,7 @@ const Sidebar = () => {
         const structuredNodes = createNodeStructured(nodes, getEdges());
         console.log("🍪 SIDEBAR.TSX ==> onSave", structuredNodes);
         try {
-            const response = await fetch("/api/workflows/1", {
+            const response = await fetch("/api/workflow/1", {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -79,7 +79,7 @@ const Sidebar = () => {
 
     const seeJson = async () => {
         try {
-            const response = await fetch("/api/workflows/1", {
+            const response = await fetch("/api/workflow/1", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",

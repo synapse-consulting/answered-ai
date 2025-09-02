@@ -13,10 +13,10 @@ class VerifyMetaIntegration
     public function handle(Request $request, Closure $next): Response
     {
         $user = Auth::user();
-        // if($user->email == 'admin@admin'){
-        //     return $next($request);
-        // }
-        return $next($request);
+        // // if($user->email == 'admin@admin'){
+        // //     return $next($request);
+        // // }
+        // return $next($request);
         
         // If no active company selected, assign the latest one
         if (!$user->currently_active_company_id) {

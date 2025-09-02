@@ -57,7 +57,7 @@ export default function WorkflowBuilder() {
     useEffect(() => {
         async function LoadWorkFlow() {
             try {
-                const response = await fetch("/api/workflows/1", {
+                const response = await fetch("/api/workflow/1", {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",

@@ -110,6 +110,12 @@
 
 @section('scripts')
     <script>
+
+function getMetaContent(name) {
+  const meta = document.querySelector(`meta[name="${name}"]`);
+  return meta ? meta.getAttribute("content") : null;
+}
+
         document.addEventListener('alpine:init', () => {
             Alpine.data('workflows', () => ({
                 workflows: @json($workflows),
@@ -146,7 +152,8 @@
 
                 async createWorkflow() {
                     try {
-                        const response = await fetch('/workflows', {
+                        const url = getMetaContent('app-url') + '/workflows';
+                        const response = await fetch(url, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -162,10 +169,10 @@
                         
                         this.workflows.push({
                             ...this.form,
-                            id: data.id
+                            id: data.workflow.id
                         });
 
-                        window.location.href="workflows/" + data.id;
+                        window.location.href="workflows/" + data.workflow.id + "/edit";
                         
                         this.showCreateModal = false;
                         
@@ -182,8 +189,9 @@
                 },
 
                 async updateWorkflow() {
+                    const url = getMetaContent('app-url') + "/workflows/" + this.form.id;  
                     try {
-                        const response = await fetch(`/workflows/${this.form.id}`, {
+                        const response = await fetch(url, {
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -213,10 +221,11 @@
                 },
 
                 async deleteWorkflow(id) {
+                    const url = getMetaContent('app-url') + "/workflows/" + id;  
                     if (!confirm('Are you sure you want to delete this workflow?')) return;
 
                     try {
-                        const response = await fetch(`/workflows/${id}`, {
+                        const response = await fetch(url, {
                             method: 'DELETE',
                             headers: {
                                 'X-CSRF-TOKEN': document.querySelector(
