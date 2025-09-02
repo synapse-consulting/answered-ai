@@ -9,6 +9,8 @@ type Props = HandleProps & {
 };
 
 export default function NodeHandle(props: Props) {
+    const view = props.nodeProps?.data?.view ?? {};
+    const color = view.color ?? "#000";
     return (
         <Handle
             className="bg-gray-700 border-2"
@@ -18,14 +20,16 @@ export default function NodeHandle(props: Props) {
                 width: "10px",
                 height: "10px",
                 border: "2px solid",
-                borderColor: dimColor(
-                    props.nodeProps.data.view.color ?? "#000",
-                    1
-                ),
-                background: dimColor(
-                    props.nodeProps.data.view.color ?? "#000",
-                    0.3
-                ),
+                borderColor: dimColor(color, 1),
+                background: dimColor(color, 0.3),
+                // borderColor: dimColor(
+                //     props.nodeProps.data.view.color ?? "#000",
+                //     1
+                // ),
+                // background: dimColor(
+                //     props.nodeProps.data.view.color ?? "#000",
+                //     0.3
+                // ),
                 ...props.style,
             }}
         />

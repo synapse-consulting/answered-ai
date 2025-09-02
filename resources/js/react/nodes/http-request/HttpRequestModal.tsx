@@ -53,6 +53,12 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
         },
     });
 
+    React.useEffect(() => {
+        if (initialConfig) {
+            reset(initialConfig);
+        }
+    }, [initialConfig]);
+
     const updateBody = (contentType: string, content?: string) => {
         if (contentType === "none") {
             setValue("body", undefined); // remove body
@@ -171,12 +177,14 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
                         `Request failed with status ${response.status}`
                 );
             }
+            console.log("Request successful:", data);
 
             updateNodeData(nodeId, (currentData) => {
                 return {
-                    ...currentData.data,
-                    metadata: data,
+                    ...currentData,
+                    config: data,
                     result,
+                    metadata: data,
                     executionStatus: "Completed",
                 };
             });
@@ -190,24 +198,24 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
         }
     };
 
-    useEffect(() => {
-        if (isOpen) {
-            reset(
-                initialConfig || {
-                    method: "GET",
-                    url: "",
-                    queryParams: [],
-                    headers: [],
-                    body: undefined,
-                    auth: { type: "none" },
-                    options: {
-                        followRedirects: true,
-                        verifySSL: true,
-                    },
-                }
-            );
-        }
-    }, [isOpen, initialConfig, reset]);
+    // useEffect(() => {
+    //     if (isOpen) {
+    //         reset(
+    //             initialConfig || {
+    //                 method: "GET",
+    //                 url: "",
+    //                 queryParams: [],
+    //                 headers: [],
+    //                 body: undefined,
+    //                 auth: { type: "none" },
+    //                 options: {
+    //                     followRedirects: true,
+    //                     verifySSL: true,
+    //                 },
+    //             }
+    //         );
+    //     }
+    // }, [isOpen, initialConfig, reset]);
 
     const methodOptions = [
         { value: HTTP_METHODS.GET, label: "GET" },

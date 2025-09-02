@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { ReactFlow, Background, Controls, MiniMap } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import Sidebar from "../components/Sidebar";
@@ -26,7 +26,9 @@ const customNodeTypes: Record<NodeTypes, React.ComponentType<any>> = {
 export default function WorkflowBuilder() {
     const {
         nodes,
+        setNodes,
         edges,
+        setEdges,
         selectedNode,
         setSelectedNode,
         onNodesChange,
@@ -36,8 +38,8 @@ export default function WorkflowBuilder() {
     } = useWorkflowState();
 
     const httpRequestConfig =
-        selectedNode?.data && "httpConfig" in selectedNode.data
-            ? (selectedNode.data as any).httpConfig
+        selectedNode?.data && "config" in selectedNode.data
+            ? (selectedNode.data as any).config
             : undefined;
     const notificationConfig =
         selectedNode?.data && "notificationConfig" in selectedNode.data
@@ -49,10 +51,42 @@ export default function WorkflowBuilder() {
             : undefined;
 
     const conditionConfig =
-        selectedNode?.data && "conditionConfig" in selectedNode.data
-            ? (selectedNode.data as any).conditionConfig
+        selectedNode?.data && "config" in selectedNode.data
+            ? (selectedNode.data as any).config
             : undefined;
+    useEffect(() => {
+        async function LoadWorkFlow() {
+            try {
+                const response = await fetch("/api/workflows/1", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    // setNodes()
+                });
 
+                if (!response.ok) {
+                    throw new Error(
+                        `Failed to save. Status: ${response.status}`
+                    );
+                }
+
+                const result = await response.json();
+                console.log("Save successful:", result);
+
+                if (result?.Workflow.executable_flow) {
+                    setNodes(result.Workflow.executable_flow.nodes || []);
+                    setEdges(result.Workflow.executable_flow.edges || []);
+                    console.log(result?.Workflow.executable_flow);
+                } else {
+                    console.warn("No executable_flow found in response");
+                }
+            } catch (error) {
+                console.error("Error saving nodes:", error);
+            }
+        }
+        LoadWorkFlow();
+    }, [setNodes, setEdges]);
     return (
         <div className="flex h-screen bg-gray-900 text-white font-sans">
             <div className="flex-1 relative">

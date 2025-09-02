@@ -1,15 +1,27 @@
-import { Edge, Node } from "@xyflow/react";
+import { Edge, Node, Position } from "@xyflow/react";
 import { NodeType } from "../types";
 
 export function createNodeStructured(nodes: NodeType[], edges: Edge[]) {
 
-     const allData = nodes.map((it) => ({
-      id: it.id,
-      type: it.type,
-      name: it.data.view.name,
-      data: it.data.result,
-  }));
-  
+  //    const allData = nodes.map((it) => ({
+  //     id: it.id,
+  //     type: it.type,
+  //     name: it.data.view.name,
+  //     position: it.position,
+  //     data: it.data.result ?? {},
+  // }));
+  const allData = nodes.map((it) => ({
+  id: it.id,
+  type: it.type,
+  position: it.position,
+  data: {
+    view: it.data.view ?? {},
+    result: it.data.result ?? {},
+    config: it.data.config ?? {},
+    metadata: it.data.metadata ?? {},
+    isConfigured: it.data.isConfigured ?? false,
+  }
+}));
 
   return {nodes: allData, edges}
 

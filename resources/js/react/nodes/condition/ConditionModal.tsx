@@ -58,18 +58,20 @@ export const ConditionModal: React.FC<ConditionModalProps> = ({
 
     const onSubmit = (data: ConditionConfig) => {
         if (!nodeId) return null;
-        updateNodeData(nodeId, {
+        updateNodeData(nodeId, (currentData) => ({
+            ...currentData,
             conditionConfig: data,
-            result: data,
-            metadata: data,
+            config: data,
+            // result: data,
+            // metadata: data,
             isConfigured: true,
-        });
+        }));
         console.log(data);
         onClose();
     };
     useEffect(() => {
         if (initialConfig) {
-            reset(initialConfig); // <- replaces values when modal opens
+            reset(initialConfig); // <- replace s values when modal opens
         } else {
             reset({
                 leftValue: "",

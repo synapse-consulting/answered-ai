@@ -9,7 +9,15 @@ interface Props
 }
 
 export default function NodeContainer({ data, selected, children }: Props) {
-    const { color, icon, label, description, name } = data.view;
+    const view = data?.view;
+
+    const {
+        color = "#888", // fallback color
+        icon = null,
+        label = "Untitled",
+        description,
+        name = "",
+    } = view;
 
     return (
         <div
@@ -23,7 +31,7 @@ export default function NodeContainer({ data, selected, children }: Props) {
                     : `0 0 0 1px ${dimColor(color, 0.6)}`,
             }}
         >
-            {children}
+            <div className="absolute inset-0">{children}</div>
             {/* <p className="text-xs">as</p> */}
             <div className="flex items-center gap-2">
                 <div
@@ -32,7 +40,7 @@ export default function NodeContainer({ data, selected, children }: Props) {
                         backgroundColor: color,
                     }}
                 >
-                    {icon}
+                    {/* {icon} */}
                 </div>
                 <div className="flex-1 min-w-0">
                     <p className="text-xs font-extralight">{name}</p>

@@ -130,5 +130,7 @@ export const useWorkflowState = () => {
     onEdgesChange,
     onConnect,
     handleNodeClick,
+    setNodes,
+    setEdges,
   };
 };

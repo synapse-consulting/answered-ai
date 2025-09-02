@@ -4,6 +4,7 @@ import { NODE_TYPES, NodeMenuItem, NodeType, NodeTypes } from "../types";
 import { useReactFlow, useNodes } from "@xyflow/react";
 import { createNodeStructured } from "../utils/node-utils";
 import useSuggestionData from "../nodes/hooks/useSuggestionData";
+import { json } from "zod";
 
 interface Props {}
 
@@ -14,9 +15,31 @@ const Sidebar = () => {
     const nodes = useNodes<NodeType>();
 
     let nodeIdCounter = Date.now();
-    const onSave = () => {
+    const onSave = async () => {
         const structuredNodes = createNodeStructured(nodes, getEdges());
         console.log("🍪 SIDEBAR.TSX ==> onSave", structuredNodes);
+        try {
+            const response = await fetch("/api/workflows/1", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    name: "Updated Workflow from Frontend",
+                    description: "This is an updated workflow",
+                    executable_flow: structuredNodes,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to save. Status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log("Save successful:", result);
+        } catch (error) {
+            console.error("Error saving nodes:", error);
+        }
     };
 
     const handleAddNode = (item: NodeMenuItem) => {
@@ -53,6 +76,27 @@ const Sidebar = () => {
             item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
             item.description.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const seeJson = async () => {
+        try {
+            const response = await fetch("/api/workflows/1", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                // body: JSON.stringify(structuredNodes),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to save. Status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log("Save successful:", result);
+        } catch (error) {
+            console.error("Error saving nodes:", error);
+        }
+    };
 
     return (
         <div className="w-80 bg-background border-l border-gray-600 p-4 flex flex-col    h-full">
@@ -123,6 +167,9 @@ const Sidebar = () => {
             shadow-lg hover:shadow-xl"
                 >
                     Save Workflow
+                </button>
+                <button onClick={seeJson} className="">
+                    SEE Json
                 </button>
             </div>
         </div>
