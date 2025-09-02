@@ -10,9 +10,13 @@ use App\Models\Credential;
 class CredentialController extends Controller
 {
     
-    public function index()
+    public function index(Request $request)
     {
-        $credentials = Credential::with('company')->get();
+        $this->validate($request, [
+            'company_id' => 'required|integer'
+        ]); 
+
+        $credentials = Credential::with('company_id', $request->company_id)->where('company_id')->get();
         return response()->json(['credentials' => $credentials]);
     }
 
@@ -35,7 +39,6 @@ class CredentialController extends Controller
   
     public function update(CredentialRequest $request, Credential $credential)
     {
-
         $credential->update($request->validated());
 
         return response()->json([

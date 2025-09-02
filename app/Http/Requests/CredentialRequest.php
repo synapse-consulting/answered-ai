@@ -19,9 +19,14 @@ class CredentialRequest extends BaseApiRequest
      */
     public function rules(): array
     {
-        return [
-            'name' => 'required', 
+        $data = [
+            'name' => 'required',
             'configuration' => 'required',
         ];
+        
+        if($this->isMethod('post')){
+            $data['company_id'] = 'required|integer'; 
+        }
+        return $data;
     }
 }
