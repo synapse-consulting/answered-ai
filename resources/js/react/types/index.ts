@@ -89,6 +89,7 @@ export type ConditionConfig = z.infer<typeof conditionConfigSchema>;
 
 
 export const ScheduelConfigSchema = z.object({
+  interval: z.enum(['seconds', 'minutes', 'hours', 'days', 'months']),
   cronExpression: z.string().min(1, "Cron expression is required"),
   timezone: z.string().min(1, "Timezone is required"),
   enableLogging: z.boolean().optional(),
