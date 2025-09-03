@@ -16,6 +16,15 @@ import { getNodeSuggestions } from "../../utils/jsonTraverser";
 import useSuggestionData from "../hooks/useSuggestionData";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { PlusIcon } from "lucide-react";
+import {
+    Tooltip,
+    TooltipTrigger,
+    TooltipProvider,
+    TooltipContent,
+} from "@/components/ui/tooltip";
+import { CredentialsModal } from "./CredentialsModal";
 
 interface NotificationModalProps {
     isOpen: boolean;
@@ -39,6 +48,9 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
     nodeId,
 }) => {
     const { updateNodeData, getNode } = useReactFlow();
+    const [showCredentialsModal, setShowCredentialsModal] = useState(false);
+
+    const handleOpen = () => setShowCredentialsModal(true);
 
     const initialConfig = getNode(nodeId ?? "")?.data as
         | NotificationNodeData
@@ -92,6 +104,10 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             description="Configure your notification settings"
             maxWidth="2xl"
         >
+            <CredentialsModal
+                isOpen={showCredentialsModal}
+                onClose={() => setShowCredentialsModal(false)}
+            />
             <form onSubmit={handleSubmit(handleSave)}>
                 <div className="space-y-6">
                     {/* Validation Errors */}
@@ -109,19 +125,42 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                     )}
 
                     {/* Notification Type */}
-                    <Controller
-                        name="type"
-                        control={control}
-                        render={({ field }) => (
-                            <SelectField
-                                label="Notification Type"
-                                value={field.value}
-                                onChange={field.onChange}
-                                options={typeOptions}
-                                required
+                    <div className="flex items-center gap-3">
+                        <div className="flex-1">
+                            <Controller
+                                name="type"
+                                control={control}
+                                render={({ field }) => (
+                                    <SelectField
+                                        label="Notification Type"
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        options={typeOptions}
+                                        required
+                                    />
+                                )}
                             />
-                        )}
-                    />
+                        </div>
+                        <div className="self-end mb-1">
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            onClick={() =>
+                                                setShowCredentialsModal(true)
+                                            }
+                                            type="button"
+                                        >
+                                            <PlusIcon />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        Add Credentials
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </div>
+                    </div>
 
                     {/* Subject (for email) */}
                     {watch("type") == "email" && (

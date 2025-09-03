@@ -33,7 +33,7 @@ const Sidebar = () => {
         // Get existing name and description
         try {
             const data = await fetch(
-                `${baseUrl}/api/workflow/${workflowId}`
+                `https://synapse.com.pk/answered-ai/api/workflow/${workflowId}`
             ).then((res) => res.json());
             var description = data.Workflow.description;
             var name = data.Workflow.name;
@@ -44,7 +44,7 @@ const Sidebar = () => {
         // Saving the workflow
         try {
             const response = await fetch(
-                `${baseUrl}/api/workflow/${workflowId}`,
+                `https://synapse.com.pk/answered-ai/api/workflow/${workflowId}`,
                 {
                     method: "PUT",
                     headers: {

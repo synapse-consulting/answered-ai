@@ -14,13 +14,15 @@ import TriggerNode from "../nodes/trigger/TriggerNode";
 import ConditionNode from "../nodes/condition/ConditionNode";
 import ScheduleNode from "../nodes/schedule/ScheduleNode";
 import { ScheduelModal } from "../nodes/schedule/ScheduelModal";
+import NotificationNode from "../nodes/notification/NotificationNode";
 // import ConnectionLine from "../components/node/ConnectionLine";
 // import { ShadcnExamples } from "../examples/ShadcnExamples";
 
 const customNodeTypes: Record<NodeTypes, React.ComponentType<any>> = {
     trigger: TriggerNode,
     httpRequest: HttpRequestNode,
-    notification: CustomNode,
+    // notification: CustomNode,
+    notification: NotificationNode,
     crm: CustomNode,
     condition: ConditionNode,
     schedule: ScheduleNode,
@@ -79,10 +81,10 @@ export default function WorkflowBuilder() {
             const url = window.location.pathname;
             const parts = url.split("/");
             const workflowId = parts[2];
-            const baseUrl = import.meta.env.VITE_APP_URL;
+            // const baseUrl = import.meta.env.VITE_APP_URL;
             try {
                 const response = await fetch(
-                    `${baseUrl}/api/workflow/${workflowId}`,
+                    `https://synapse.com.pk/answered-ai/api/workflow/${workflowId}`,
                     {
                         method: "GET",
                         headers: {
