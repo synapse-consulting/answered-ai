@@ -12,6 +12,8 @@ import { HttpRequestModal } from "../nodes/http-request/HttpRequestModal";
 import HttpRequestNode from "../nodes/http-request/HttpRequestNode";
 import TriggerNode from "../nodes/trigger/TriggerNode";
 import ConditionNode from "../nodes/condition/ConditionNode";
+import ScheduleNode from "../nodes/schedule/ScheduleNode";
+import { ScheduelModal } from "../nodes/schedule/ScheduelModal";
 // import ConnectionLine from "../components/node/ConnectionLine";
 // import { ShadcnExamples } from "../examples/ShadcnExamples";
 
@@ -21,6 +23,7 @@ const customNodeTypes: Record<NodeTypes, React.ComponentType<any>> = {
     notification: CustomNode,
     crm: CustomNode,
     condition: ConditionNode,
+    schedule: ScheduleNode,
 };
 
 export default function WorkflowBuilder() {
@@ -55,6 +58,13 @@ export default function WorkflowBuilder() {
         selectedNode?.data && "config" in selectedNode.data
             ? (selectedNode.data as any).config
             : undefined;
+
+
+    const scheduelConfig =
+        selectedNode?.data && "scheduelConfig" in selectedNode.data
+            ? (selectedNode.data as any).scheduelConfig
+            : undefined;
+
 
     // useEffect(() => {
     //     var handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -163,6 +173,13 @@ export default function WorkflowBuilder() {
                 onClose={() => setSelectedNode(null)}
                 nodeId={selectedNode?.id}
                 initialConfig={conditionConfig}
+            />
+
+            <ScheduelModal
+                isOpen={selectedNode?.type === NODE_TYPES.SCHEDULE}
+                onClose={() => setSelectedNode(null)}
+                nodeId={selectedNode?.id}
+                initialConfig={scheduelConfig}
             />
         </div>
     );

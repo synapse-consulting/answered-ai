@@ -1,7 +1,6 @@
-import React from "react";
 import { FiMail, FiGlobe } from "react-icons/fi";
 import { FaHubspot, FaSalesforce } from "react-icons/fa";
-import { FiGitBranch } from "react-icons/fi";
+import { FiGitBranch, FiClock } from "react-icons/fi";
 import { NodeMenuItem, NODE_TYPES } from "../types";
 
 export const nodeMenuItems: NodeMenuItem[] = [
@@ -44,5 +43,13 @@ export const nodeMenuItems: NodeMenuItem[] = [
         description: "Add conditional logic",
         color: "#8b5cf6",
         type: NODE_TYPES.CONDITION,
+    },
+    {
+        label: "Schedule Trigger",
+        name: "Schedule",
+        icon: <FiClock size={20} />,
+        description: "Add Schedule logic",
+        color: "#8cfa3e",
+        type: NODE_TYPES.SCHEDULE,
     },
 ];

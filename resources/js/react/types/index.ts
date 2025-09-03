@@ -28,7 +28,7 @@ export const KeyValuePairSchema = z.object({
   value: z.string()
 })
 
-export type NodeTypes = 'trigger' | 'httpRequest' | 'notification' | 'crm' | 'condition';
+export type NodeTypes = 'trigger' | 'httpRequest' | 'notification' | 'crm' | 'condition' | 'schedule';
 
 export interface NodeType extends Node<BaseNodeData<RecordUnknown>, NodeTypes> {}
 
@@ -87,6 +87,17 @@ export const conditionConfigSchema = z.object({
 // Infer TS type from Zod
 export type ConditionConfig = z.infer<typeof conditionConfigSchema>;
 
+
+export const ScheduelConfigSchema = z.object({
+  interval: z.enum(['seconds', 'minutes', 'hours', 'days', 'months']),
+  cronExpression: z.string().min(1, "Cron expression is required"),
+  timezone: z.string().min(1, "Timezone is required"),
+  enableLogging: z.boolean().optional(),
+  autoRetry: z.boolean().optional()
+})
+
+export type ScheduelConfig = z.infer<typeof ScheduelConfigSchema>
+
 export interface NotificationNodeData extends BaseNodeData<NotificationConfig> {}
 
 export interface CrmNodeData extends BaseNodeData<CrmConfig> {}
@@ -121,6 +132,7 @@ export const NODE_TYPES = {
   NOTIFICATION: 'notification' as const,
   CRM: 'crm' as const,
   CONDITION: 'condition' as const,
+  SCHEDULE: 'schedule' as const,
 } as const;
 
 export const HTTP_METHODS = {
