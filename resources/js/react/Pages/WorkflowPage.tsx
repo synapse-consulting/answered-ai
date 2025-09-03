@@ -80,7 +80,7 @@ export default function WorkflowBuilder() {
         async function LoadWorkFlow() {
             const url = window.location.pathname;
             const parts = url.split("/");
-            const workflowId = parts[2];
+            const workflowId = parts[3];
             // const baseUrl = import.meta.env.VITE_APP_URL;
             try {
                 const response = await fetch(

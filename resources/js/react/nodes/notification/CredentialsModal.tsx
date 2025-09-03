@@ -5,7 +5,7 @@ import { SelectField } from "../../components/ui/SelectField";
 // import { TextareaField } from "../../components/ui/TextareaField";
 import { CheckboxField } from "../../components/ui/CheckboxField";
 import { KeyValueEditor } from "../../components/ui/KeyValueEditor";
-import { CredentialConfig } from "../../types";
+import { CredentialConfig, CredentialConfigSchema } from "../../types";
 import { useReactFlow } from "@xyflow/react";
 import { SuggestiveInput } from "@/react/components/ui/SuggestiveInput";
 import { getNodeSuggestions } from "../../utils/jsonTraverser";
@@ -38,7 +38,10 @@ export const CredentialsModal: React.FC<CredentialModalProps> = ({
         formState: { errors, isValid },
         reset,
         watch,
-    } = useForm({});
+    } = useForm<CredentialConfig>({
+        resolver: zodResolver(CredentialConfigSchema),
+        defaultValues: { ...defaultValues },
+    });
 
     const handleSave = (data) => {};
 
@@ -60,8 +63,21 @@ export const CredentialsModal: React.FC<CredentialModalProps> = ({
             onClose={onClose}
             title="Add Credentials"
             // description="Configure your notification settings"
-            maxWidth="2xl"
+            maxWidth="xl"
         >
+            <Controller
+                name="type"
+                control={control}
+                render={({ field }) => (
+                    <SelectField
+                        label="Notification Type"
+                        value={field.value}
+                        onChange={field.onChange}
+                        options={typeOptions}
+                        required
+                    />
+                )}
+            />
             <Controller
                 name="subject"
                 control={control}
