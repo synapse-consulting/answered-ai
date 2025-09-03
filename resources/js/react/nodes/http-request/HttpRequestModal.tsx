@@ -30,6 +30,19 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
     const [response, setResponse] = React.useState<any | null>(null);
     const [isLoading, setIsLoading] = React.useState(false);
 
+    const defaults: HttpConfig = {
+        method: "GET",
+        url: "",
+        queryParams: [],
+        headers: [],
+        body: undefined,
+        auth: { type: "none" },
+        options: {
+            followRedirects: true,
+            verifySSL: true,
+        },
+    };
+
     const {
         control,
         handleSubmit,
@@ -55,7 +68,7 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
 
     React.useEffect(() => {
         if (initialConfig) {
-            reset(initialConfig);
+            reset({ ...defaults, ...initialConfig });
         }
     }, [initialConfig]);
 
@@ -289,7 +302,9 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
                                 render={({ field }) => (
                                     <SelectField
                                         label="Method"
-                                        {...field}
+                                        // {...field}
+                                        value={field.value || "GET"}
+                                        onChange={field.onChange}
                                         options={methodOptions}
                                         required
                                         placeholder={""}

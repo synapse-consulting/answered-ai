@@ -14,15 +14,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 // import { de } from "zod/v4/locales";
 // import { fi } from "zod/v4/locales";
 
-const defaultValues: CrmConfig = {
-    provider: "hubspot",
-    action: "create",
-    object: "contact",
-    fields: [],
-    apiKey: "",
-    enableLogging: true,
-    autoRetry: false,
-};
+// const defaultValues: CrmConfig = {
+//     provider: "hubspot",
+//     action: "create",
+//     object: "contact",
+//     fields: [],
+//     apiKey: "",
+//     enableLogging: true,
+//     autoRetry: false,
+// };
 
 interface CrmModalProps {
     isOpen: boolean;
@@ -49,7 +49,15 @@ export const CrmModal: React.FC<CrmModalProps> = ({
         formState: { errors, isValid },
     } = useForm<CrmConfig>({
         resolver: zodResolver(CrmConfigSchema),
-        defaultValues: initialConfig ?? defaultValues,
+        defaultValues: initialConfig ?? {
+            provider: "hubspot",
+            action: "create",
+            object: "contact",
+            fields: [],
+            apiKey: "",
+            enableLogging: true,
+            autoRetry: false,
+        },
     });
 
     // useEffect(() => {
@@ -60,7 +68,7 @@ export const CrmModal: React.FC<CrmModalProps> = ({
         // const errors = validateConfig();
         if (nodeId) {
             updateNodeData(nodeId, {
-                crmConfig: data,
+                config: data,
                 result: data,
                 isConfigured: true,
             });
@@ -71,7 +79,17 @@ export const CrmModal: React.FC<CrmModalProps> = ({
 
     useEffect(() => {
         if (isOpen) {
-            reset(initialConfig || defaultValues);
+            reset(
+                initialConfig || {
+                    provider: "hubspot",
+                    action: "create",
+                    object: "contact",
+                    fields: [],
+                    apiKey: "",
+                    enableLogging: true,
+                    autoRetry: false,
+                }
+            );
         }
     }, [isOpen, initialConfig, reset]);
 
@@ -177,7 +195,9 @@ export const CrmModal: React.FC<CrmModalProps> = ({
                             render={({ field }) => (
                                 <SelectField
                                     label="CRM Provider"
-                                    {...field}
+                                    // {...field}
+                                    value={field.value || "hubspot"}
+                                    onChange={field.onChange}
                                     options={providerOptions}
                                     required
                                 />
@@ -190,7 +210,9 @@ export const CrmModal: React.FC<CrmModalProps> = ({
                             render={({ field }) => (
                                 <SelectField
                                     label="Action"
-                                    {...field}
+                                    // {...field}
+                                    value={field.value || "create"}
+                                    onChange={field.onChange}
                                     options={actionOptions}
                                     required
                                 />
@@ -202,7 +224,9 @@ export const CrmModal: React.FC<CrmModalProps> = ({
                             render={({ field }) => (
                                 <SelectField
                                     label="Object Type"
-                                    {...field}
+                                    // {...field}
+                                    value={field.value || "contact"}
+                                    onChange={field.onChange}
                                     options={objectOptions}
                                     required
                                 />
@@ -234,7 +258,7 @@ export const CrmModal: React.FC<CrmModalProps> = ({
                         render={({ field }) => (
                             <KeyValueEditor
                                 label="Field Mappings"
-                                items={field.value}
+                                items={field.value || []}
                                 onAdd={() =>
                                     field.onChange([
                                         ...field.value,
