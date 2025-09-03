@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use App\Enums\IntegrationEnum;
-use App\Models\CompanyApp;
-use App\Enums\IntegrationTypeEnum; 
 
 class IntegrationService
 {
@@ -15,8 +13,8 @@ class IntegrationService
                 $service->sendEmail();
             
                 break;
-            case IntegrationEnum::SMTP:
-                
+            case IntegrationEnum::SLACK:
+                    new Integrations\SlackService($dto);
                 break;
             
             default:

@@ -16,7 +16,7 @@ class SmtpIntegrationService extends BaseService
 
     protected function configureMailer(): void
     {
-        $credential = $this->getCredentials($this->config->credentialId);
+        $credential = (object) $this->getCredentials($this->config->credentialId);
         
         Config::set('mail.mailers.custom_mailer', [
             'transport' => 'smtp',
@@ -38,8 +38,8 @@ class SmtpIntegrationService extends BaseService
      */
     public function sendEmail(): void
     {
-        Mail::mailer('custom_mailer')->raw($this->config->body, function ($message) use ($to) {
-            $message->to($this->config->fromEmail)->subject($this->config->subject);
+        Mail::mailer('custom_mailer')->raw($this->config->body, function ($message) {
+            $message->to($this->config->toEmail)->subject($this->config->subject);
         });
     }
 }

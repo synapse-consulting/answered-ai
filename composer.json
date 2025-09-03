@@ -11,6 +11,7 @@
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
+        "laravel/slack-notification-channel": "3.5",
         "laravel/tinker": "^2.8",
         "laravel/ui": "^4.6"
     },
