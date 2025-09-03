@@ -3,8 +3,10 @@ import { nodeMenuItems } from "../config/nodeTypes";
 import { NODE_TYPES, NodeMenuItem, NodeType, NodeTypes } from "../types";
 import { useReactFlow, useNodes } from "@xyflow/react";
 import { createNodeStructured } from "../utils/node-utils";
-import useSuggestionData from "../nodes/hooks/useSuggestionData";
-
+// import useSuggestionData from "../nodes/hooks/useSuggestionData";
+// import { json } from "zod";
+import { toast } from "sonner";
+import { X } from "lucide-react";
 interface Props {}
 
 const Sidebar = () => {
@@ -41,6 +43,45 @@ const Sidebar = () => {
         }
 
         console.log("🍪 SIDEBAR.TSX ==> onSave", structuredNodes);
+
+        const url = window.location.pathname;
+        const parts = url.split("/");
+        const workflowId = parts[2];
+
+        try {
+            const data = await fetch(`/api/workflow/${workflowId}`).then(
+                (res) => res.json()
+            );
+            var description = data.Workflow.description;
+            var name = data.Workflow.name;
+        } catch (error) {
+            console.log("Untitled Workflow");
+        }
+
+        try {
+            const response = await fetch(`/api/workflow/${workflowId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    name: name || "Untitled Workflow",
+                    description: description || "",
+                    executable_flow: structuredNodes,
+                }),
+            });
+
+            if (!response.ok) {
+                toast.error(`Failed to save. Status: ${response.status}`);
+            } else {
+                toast.success("Workflow saved successfully!");
+            }
+            // const result = await response.json();
+            // console.log("Save successful:", result);
+        } catch (error) {
+            console.error("Error saving nodes:", error);
+            toast(`Error saving nodes`);
+        }
     };
 
     const handleAddNode = (item: NodeMenuItem) => {
@@ -82,9 +123,14 @@ const Sidebar = () => {
         <div className="w-80 bg-background border-l border-gray-600 p-4 flex flex-col    h-full">
             {/* Header */}
             <div className="mb-4">
-                <h3 className="text-lg font-semibold text-white mb-3">
-                    Add Node
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-white">
+                        Add Node
+                    </h3>
+                    <a href="/workflows">
+                        <X />
+                    </a>
+                </div>
                 <input
                     type="text"
                     placeholder="Search nodes..."

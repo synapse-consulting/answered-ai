@@ -32,6 +32,10 @@
                                         <td x-text="workflow.name"></td>
                                         <td x-text="workflow.description"></td>
                                         <td>
+                                              <!-- Use Alpine for dynamic href -->
+                                            <a class="btn bg-gray-800 hover:bg-gray-900 inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white transition rounded-lg shadow-theme-xs" :href="`/workflows/${workflow.id}/edit`" class="btn btn-primary">
+                                                <i class="fa fa-project-diagram"></i>
+                                            </a>
                                             <x-button @click="openEditModal(workflow)" class="btn-primary">
                                                 <i class="fa fa-edit"></i>
                                             </x-button>
@@ -106,6 +110,12 @@
 
 @section('scripts')
     <script>
+
+function getMetaContent(name) {
+  const meta = document.querySelector(`meta[name="${name}"]`);
+  return meta ? meta.getAttribute("content") : null;
+}
+
         document.addEventListener('alpine:init', () => {
             Alpine.data('workflows', () => ({
                 workflows: @json($workflows),
@@ -142,7 +152,8 @@
 
                 async createWorkflow() {
                     try {
-                        const response = await fetch('/workflows', {
+                        const url = getMetaContent('app-url') + '/workflows';
+                        const response = await fetch(url, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -158,8 +169,10 @@
                         
                         this.workflows.push({
                             ...this.form,
-                            id: data.id
+                            id: data.workflow.id
                         });
+
+                        window.location.href="workflows/" + data.workflow.id + "/edit";
                         
                         this.showCreateModal = false;
                         
@@ -176,8 +189,9 @@
                 },
 
                 async updateWorkflow() {
+                    const url = getMetaContent('app-url') + "/workflows/" + this.form.id;  
                     try {
-                        const response = await fetch(`/workflows/${this.form.id}`, {
+                        const response = await fetch(url, {
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -207,10 +221,11 @@
                 },
 
                 async deleteWorkflow(id) {
+                    const url = getMetaContent('app-url') + "/workflows/" + id;  
                     if (!confirm('Are you sure you want to delete this workflow?')) return;
 
                     try {
-                        const response = await fetch(`/workflows/${id}`, {
+                        const response = await fetch(url, {
                             method: 'DELETE',
                             headers: {
                                 'X-CSRF-TOKEN': document.querySelector(

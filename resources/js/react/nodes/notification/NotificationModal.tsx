@@ -49,11 +49,12 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
 
     const handleSave = (data: NotificationConfig) => {
         if (nodeId) {
-            updateNodeData(nodeId, {
-                notificationConfig: data,
+            updateNodeData(nodeId, (currentData) => ({
+                ...currentData,
+                config: data,
                 result: data,
                 isConfigured: true,
-            });
+            }));
             onClose();
         }
     };

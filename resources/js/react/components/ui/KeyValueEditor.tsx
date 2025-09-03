@@ -24,6 +24,7 @@ export const KeyValueEditor = ({
     keyPlaceholder = "Key",
     valuePlaceholder = "Value",
 }: Props) => {
+    const safeItems = Array.isArray(items) ? items : [];
     return (
         <div className="space-y-3">
             <div className="flex justify-between items-center">
@@ -42,13 +43,13 @@ export const KeyValueEditor = ({
                 </Button>
             </div>
 
-            {items.length > 0 ? (
+            {safeItems.length > 0 ? (
                 <div className="space-y-2">
                     {items.map((item, index) => (
                         <div key={index} className="flex gap-2 items-center">
                             <Input
                                 type="text"
-                                value={item.key}
+                                value={item.key ?? null}
                                 onChange={(e) =>
                                     onUpdate(index, "key", e.target.value)
                                 }
@@ -57,7 +58,7 @@ export const KeyValueEditor = ({
                             />
                             <Input
                                 type="text"
-                                value={item.value}
+                                value={item.value ?? null}
                                 onChange={(e) =>
                                     onUpdate(index, "value", e.target.value)
                                 }

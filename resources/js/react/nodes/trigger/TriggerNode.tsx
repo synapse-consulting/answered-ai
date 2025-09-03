@@ -7,14 +7,23 @@ import { FiPlayCircle } from "react-icons/fi";
 type Props = NodeProps<Node<TriggerNodeData, "trigger">>;
 
 export default function TriggerNode(props: Props) {
-  return (
-    <NodeContainer
-      {...props}
-      data={{
-        ...props.data,
-        view: { ...props.data.view, icon: <FiPlayCircle size={20} /> },
-      }}>
-      <NodeHandle type="source" position={Position.Right} nodeProps={props} />
-    </NodeContainer>
-  );
+    const safeData = props.data ?? { view: {} };
+    return (
+        <NodeContainer
+            {...props}
+            data={{
+                ...safeData,
+                view: {
+                    ...(safeData.view ?? {}),
+                    icon: <FiPlayCircle size={20} />,
+                },
+            }}
+        >
+            <NodeHandle
+                type="source"
+                position={Position.Right}
+                nodeProps={props}
+            />
+        </NodeContainer>
+    );
 }

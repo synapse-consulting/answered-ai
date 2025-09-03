@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import {
   useNodesState,
   useEdgesState,
@@ -34,7 +34,8 @@ export const useWorkflowState = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = React.useState<NodeType | null>(null);
-
+  const [isSaved, setIsSaved] = useState(true);
+ 
   const onConnect = useCallback(
     (params: Connection) => {
       setEdges((eds) => addEdge(params, eds));
@@ -46,6 +47,7 @@ export const useWorkflowState = () => {
     const nodeType = node?.data.view.type;
     if (nodeType !== NODE_TYPES.TRIGGER) {
       setSelectedNode(node);
+      setIsSaved(false);
     }
   }, []);
 
@@ -130,5 +132,8 @@ export const useWorkflowState = () => {
     onEdgesChange,
     onConnect,
     handleNodeClick,
+    setNodes,
+    setEdges,
+    isSaved
   };
 };

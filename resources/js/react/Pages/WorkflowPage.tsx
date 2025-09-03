@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { ReactFlow, Background, Controls, MiniMap } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import Sidebar from "../components/Sidebar";
@@ -29,38 +29,92 @@ const customNodeTypes: Record<NodeTypes, React.ComponentType<any>> = {
 export default function WorkflowBuilder() {
     const {
         nodes,
+        setNodes,
         edges,
+        setEdges,
         selectedNode,
         setSelectedNode,
         onNodesChange,
         onEdgesChange,
+        isSaved,
         onConnect,
         handleNodeClick,
     } = useWorkflowState();
 
     const httpRequestConfig =
-        selectedNode?.data && "httpConfig" in selectedNode.data
-            ? (selectedNode.data as any).httpConfig
+        selectedNode?.data && "config" in selectedNode.data
+            ? (selectedNode.data as any).config
             : undefined;
     const notificationConfig =
-        selectedNode?.data && "notificationConfig" in selectedNode.data
-            ? (selectedNode.data as any).notificationConfig
+        selectedNode?.data && "config" in selectedNode.data
+            ? (selectedNode.data as any).config
             : undefined;
     const crmConfig =
-        selectedNode?.data && "crmConfig" in selectedNode.data
-            ? (selectedNode.data as any).crmConfig
+        selectedNode?.data && "config" in selectedNode.data
+            ? (selectedNode.data as any).config
             : undefined;
 
     const conditionConfig =
-        selectedNode?.data && "conditionConfig" in selectedNode.data
-            ? (selectedNode.data as any).conditionConfig
+        selectedNode?.data && "config" in selectedNode.data
+            ? (selectedNode.data as any).config
             : undefined;
+
 
     const scheduelConfig =
         selectedNode?.data && "scheduelConfig" in selectedNode.data
             ? (selectedNode.data as any).scheduelConfig
             : undefined;
 
+
+    // useEffect(() => {
+    //     var handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    //         if (!isSaved && (nodes.length > 0 || edges.length > 0)) {
+    //             e.preventDefault();
+    //             e.returnValue = ""; // Chrome requires this
+    //         }
+    //     };
+
+    //     window.addEventListener("beforeunload", handleBeforeUnload);
+    //     return () => {
+    //         window.removeEventListener("beforeunload", handleBeforeUnload);
+    //     };
+    // }, [isSaved, nodes, edges]);
+
+    useEffect(() => {
+        async function LoadWorkFlow() {
+            const url = window.location.pathname;
+            const parts = url.split("/");
+            const workflowId = parts[2];
+            try {
+                const response = await fetch(`/api/workflow/${workflowId}`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(
+                        `Failed to save. Status: ${response.status}`
+                    );
+                }
+
+                const result = await response.json();
+                console.log("Save successful:", result);
+
+                if (result?.Workflow.executable_flow) {
+                    setNodes(result.Workflow.executable_flow.nodes || []);
+                    setEdges(result.Workflow.executable_flow.edges || []);
+                    console.log(result?.Workflow.executable_flow);
+                } else {
+                    console.warn("No executable_flow found in response");
+                }
+            } catch (error) {
+                console.error("Error saving nodes:", error);
+            }
+        }
+        LoadWorkFlow();
+    }, [setNodes, setEdges]);
     return (
         <div className="flex h-screen bg-gray-900 text-white font-sans">
             <div className="flex-1 relative">

@@ -4,9 +4,10 @@ import { useNodes } from "@xyflow/react";
 export default function useSuggestionData() {
     const nodes = useNodes<NodeType>();
     const allData = nodes.map((it) => {
+        const view = it.data?.view ?? {};
         return {
-            name: it.data.view.name,
-            data: it.data.result,
+            name: view.name ?? "Untitled",
+            data: it.data?.result ?? null,
         };
     });
 
