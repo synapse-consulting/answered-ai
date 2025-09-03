@@ -9,7 +9,7 @@ export type RecordUnknown = Record<string, unknown>;
 export interface BaseNodeData<T extends RecordUnknown = RecordUnknown> extends RecordUnknown {
   view: NodeView;
   executionStatus?: ExecutionStatus;
-  metadata: T;
+  config: T;
   result: any
 }
 

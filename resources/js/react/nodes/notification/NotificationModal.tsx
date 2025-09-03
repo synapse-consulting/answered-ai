@@ -5,7 +5,11 @@ import { SelectField } from "../../components/ui/SelectField";
 // import { TextareaField } from "../../components/ui/TextareaField";
 import { CheckboxField } from "../../components/ui/CheckboxField";
 import { KeyValueEditor } from "../../components/ui/KeyValueEditor";
-import { NotificationConfig, NotificationConfigSchema } from "../../types";
+import {
+    NotificationConfig,
+    NotificationConfigSchema,
+    NotificationNodeData,
+} from "../../types";
 import { useReactFlow } from "@xyflow/react";
 import { SuggestiveInput } from "@/react/components/ui/SuggestiveInput";
 import { getNodeSuggestions } from "../../utils/jsonTraverser";
@@ -17,16 +21,28 @@ interface NotificationModalProps {
     isOpen: boolean;
     onClose: () => void;
     nodeId?: string;
-    initialConfig?: NotificationConfig;
 }
+
+const defaultValues: NotificationConfig = {
+    type: "email",
+    recipients: [],
+    subject: "",
+    message: "",
+    template: "",
+    enableLogging: true,
+    autoRetry: false,
+};
 
 export const NotificationModal: React.FC<NotificationModalProps> = ({
     isOpen,
     onClose,
     nodeId,
-    initialConfig,
 }) => {
-    const { updateNodeData } = useReactFlow();
+    const { updateNodeData, getNode } = useReactFlow();
+
+    const initialConfig = getNode(nodeId ?? "")?.data as
+        | NotificationNodeData
+        | undefined;
 
     const {
         control,
@@ -36,16 +52,13 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         watch,
     } = useForm<NotificationConfig>({
         resolver: zodResolver(NotificationConfigSchema),
-        defaultValues: initialConfig ?? {
-            type: "email",
-            recipients: [],
-            subject: "",
-            message: "",
-            template: "",
-            enableLogging: true,
-            autoRetry: false,
-        },
+        defaultValues: { ...defaultValues, ...initialConfig?.config },
     });
+    React.useEffect(() => {
+        if (initialConfig) {
+            reset({ ...defaultValues, ...initialConfig?.config });
+        }
+    }, [initialConfig, isOpen]);
 
     const handleSave = (data: NotificationConfig) => {
         if (nodeId) {
@@ -58,22 +71,6 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             onClose();
         }
     };
-
-    useEffect(() => {
-        if (isOpen) {
-            reset(
-                initialConfig || {
-                    type: "email",
-                    recipients: [],
-                    subject: "",
-                    message: "",
-                    template: "",
-                    enableLogging: true,
-                    autoRetry: false,
-                }
-            );
-        }
-    }, [isOpen, initialConfig, reset]);
 
     const typeOptions = [
         { value: "email", label: "Email" },
@@ -118,7 +115,8 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                         render={({ field }) => (
                             <SelectField
                                 label="Notification Type"
-                                {...field}
+                                value={field.value}
+                                onChange={field.onChange}
                                 options={typeOptions}
                                 required
                             />

@@ -8,8 +8,8 @@ export const HttpConfigSchema = z.object({
    headers: z.array(KeyValuePairSchema),
    body: z
     .object({
-      contentType: z.string(),
-      content: z.string(),
+      contentType: z.string().nullable(),
+      content: z.string().nullable(),
     })
     .optional(),
   options: z.object({
@@ -18,9 +18,9 @@ export const HttpConfigSchema = z.object({
   }),
   auth: z.object({
     type: z.enum(['none', 'basic', 'bearer']),
-    username: z.string().optional(),
-    password: z.string().optional(),
-    token: z.string().optional(),
+    username: z.string().optional().nullable(),
+    password: z.string().optional().nullable(),
+    token: z.string().optional().nullable()
   }),
 
 })

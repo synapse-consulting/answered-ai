@@ -23,7 +23,7 @@ const initialNodes: NodeType[] = [
         description: "",
         type: NODE_TYPES.TRIGGER,
       },
-      metadata: {},
+      config: {},
     },
   },
 ];

@@ -41,30 +41,24 @@ export default function WorkflowBuilder() {
         handleNodeClick,
     } = useWorkflowState();
 
-    const httpRequestConfig =
-        selectedNode?.data && "config" in selectedNode.data
-            ? (selectedNode.data as any).config
-            : undefined;
-    const notificationConfig =
-        selectedNode?.data && "config" in selectedNode.data
-            ? (selectedNode.data as any).config
-            : undefined;
-    const crmConfig =
-        selectedNode?.data && "config" in selectedNode.data
-            ? (selectedNode.data as any).config
-            : undefined;
+    // const notificationConfig =
+    //     selectedNode?.data && "config" in selectedNode.data
+    //         ? (selectedNode.data as any).config
+    //         : undefined;
+    // const crmConfig =
+    //     selectedNode?.data && "config" in selectedNode.data
+    //         ? (selectedNode.data as any).config
+    //         : undefined;
 
-    const conditionConfig =
-        selectedNode?.data && "config" in selectedNode.data
-            ? (selectedNode.data as any).config
-            : undefined;
-
+    // const conditionConfig =
+    //     selectedNode?.data && "config" in selectedNode.data
+    //         ? (selectedNode.data as any).config
+    //         : undefined;
 
     const scheduelConfig =
         selectedNode?.data && "scheduelConfig" in selectedNode.data
             ? (selectedNode.data as any).scheduelConfig
             : undefined;
-
 
     // useEffect(() => {
     //     var handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -85,13 +79,17 @@ export default function WorkflowBuilder() {
             const url = window.location.pathname;
             const parts = url.split("/");
             const workflowId = parts[2];
+            const baseUrl = import.meta.env.VITE_APP_URL;
             try {
-                const response = await fetch(`/api/workflow/${workflowId}`, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                });
+                const response = await fetch(
+                    `${baseUrl}/api/workflow/${workflowId}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
 
                 if (!response.ok) {
                     throw new Error(
@@ -151,28 +149,24 @@ export default function WorkflowBuilder() {
                 isOpen={selectedNode?.type === NODE_TYPES.HTTP_REQUEST}
                 onClose={() => setSelectedNode(null)}
                 nodeId={selectedNode?.id}
-                initialConfig={httpRequestConfig}
             />
 
             <NotificationModal
                 isOpen={selectedNode?.type === NODE_TYPES.NOTIFICATION}
                 onClose={() => setSelectedNode(null)}
                 nodeId={selectedNode?.id}
-                initialConfig={notificationConfig}
             />
 
             <CrmModal
                 isOpen={selectedNode?.type === NODE_TYPES.CRM}
                 onClose={() => setSelectedNode(null)}
                 nodeId={selectedNode?.id}
-                initialConfig={crmConfig}
             />
 
             <ConditionModal
                 isOpen={selectedNode?.type === NODE_TYPES.CONDITION}
                 onClose={() => setSelectedNode(null)}
                 nodeId={selectedNode?.id}
-                initialConfig={conditionConfig}
             />
 
             <ScheduelModal

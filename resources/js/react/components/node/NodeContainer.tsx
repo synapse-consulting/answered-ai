@@ -19,6 +19,8 @@ export default function NodeContainer({ data, selected, children }: Props) {
         name = "",
     } = view;
 
+    const isConfigured = data && data.isConfigured;
+
     return (
         <div
             className={`cursor-pointer p-3 rounded-lg text-white font-sans min-w-[140px] transition-all duration-200 ${
@@ -32,7 +34,6 @@ export default function NodeContainer({ data, selected, children }: Props) {
             }}
         >
             <div className="absolute inset-0">{children}</div>
-            {/* <p className="text-xs">as</p> */}
             <div className="flex items-center gap-2">
                 <div
                     className="rounded-md w-9 h-9 flex items-center justify-center flex-shrink-0"
@@ -43,7 +44,14 @@ export default function NodeContainer({ data, selected, children }: Props) {
                     {/* {icon} */}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="text-xs font-extralight">{name}</p>
+                    <div className="flex gap-2 items-center">
+                        <p className="text-xs font-extralight">{name}</p>
+                        {!isConfigured ? (
+                            <div className="h-2 w-2 bg-amber-800 rounded-full"></div>
+                        ) : (
+                            <div className="h-2 w-2 bg-green-700 rounded-full"></div>
+                        )}
+                    </div>
                     <span className="font-semibold text-sm truncate">
                         {label}
                     </span>
