@@ -1,4 +1,4 @@
-import { Edge, Node, Position } from "@xyflow/react";
+import { Edge } from "@xyflow/react";
 import { NodeType } from "../types";
 
 export function createNodeStructured(nodes: NodeType[], edges: Edge[]) {
