@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\CredentialController;
 use App\Http\Controllers\Api\V1\IntegrationController;
 use App\Http\Controllers\Api\V1\WorkflowController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\KnowledgeBaseController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,6 +36,8 @@ Route::resource('credentials', CredentialController::class);
 Route::resource('workflow', WorkflowController::class);  
 
 Route::post('/integration', [IntegrationController::class, 'integrate'])->name('api.integration');
+Route::post('/update-knowledge-base-status', [KnowledgeBaseController::class, 'updateStatusByTask'])
+->name('api.update.status.kb');
 
 Route::group(['prefix' => 'integrations'], function () {
     Route::group(['prefix' => 'shopify'], function () {

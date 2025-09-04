@@ -10,6 +10,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\WorkflowController;
 use App\Http\Controllers\IntentController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\KnowledgeBaseController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,6 +41,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/chats/{id}', [ChatController::class, 'getMessages'])->name('chats');
 
         Route::resource('workflows', WorkflowController::class);
+        Route::resource('knowledge-base', KnowledgeBaseController::class);
+        
     });
     
     Route::group(['prefix' => 'meta'], function () {

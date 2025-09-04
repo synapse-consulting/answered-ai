@@ -25,7 +25,7 @@ const Sidebar = () => {
 
         // Get the workflow ID from the URL
         const url = window.location.pathname;
-        const parts = url.split("/");
+    const parts = url.split("/");
         const workflowId = parts[3];
 
         const baseUrl = import.meta.env.VITE_APP_URL;

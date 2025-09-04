@@ -45,6 +45,16 @@
                                 Flow</span>
                         </a>
                     </li>
+
+                    <li>
+                        <a href="{{ route('knowledge-base.index') }}"
+                            class="group relative flex flex-col items-center justify-center gap-1 text-gray-600 dark:text-gray-300 hover:text-primary"
+                            title="AI Flow">
+                            <img src="{{ asset('system/images/icons/lightbulb.png') }}" />
+                            <span
+                                class="text-xs absolute top-full mt-1 w-max px-2 py-1 bg-gray-800 text-white text-[11px] rounded opacity-0 group-hover:opacity-100 transition-opacity">Knowledge Base</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </div>
