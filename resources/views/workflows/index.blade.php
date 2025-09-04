@@ -152,7 +152,7 @@ function getMetaContent(name) {
 
                 async createWorkflow() {
                     try {
-                        const url = getMetaContent('app-url') + '/workflows';
+                        const url = getMetaContent('app-url') + '/workflows/';
                         const response = await fetch(url, {
                             method: 'POST',
                             headers: {
@@ -172,7 +172,7 @@ function getMetaContent(name) {
                             id: data.workflow.id
                         });
 
-                        window.location.href="workflows/" + data.workflow.id + "/edit";
+                        window.location.href=url + data.workflow.id + "/edit?id=" + data.workflow.id;
                         
                         this.showCreateModal = false;
                         

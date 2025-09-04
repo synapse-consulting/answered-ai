@@ -4,7 +4,11 @@ import { SelectField } from "../../components/ui/SelectField";
 // import { FormField } from "../../components/ui/FormField";
 import { SuggestiveInput } from "../../components/ui/SuggestiveInput";
 import { useReactFlow } from "@xyflow/react";
-import { ConditionConfig, conditionConfigSchema } from "../../types";
+import {
+    ConditionConfig,
+    conditionConfigSchema,
+    ConditionNodeData,
+} from "../../types";
 import { getNodeSuggestions } from "../../utils/jsonTraverser";
 import useSuggestionData from "../hooks/useSuggestionData";
 
@@ -15,9 +19,12 @@ interface ConditionModalProps {
     isOpen: boolean;
     onClose: () => void;
     nodeId?: string;
-    initialConfig?: ConditionConfig;
 }
-
+const defaults: ConditionConfig = {
+    operator: { type: "string", operation: "equals" },
+    leftValue: "",
+    rightValue: "",
+};
 const OPERATORS = [
     { value: "equals", label: "Equals" },
     { value: "not_equals", label: "Not Equals" },
@@ -36,11 +43,14 @@ export const ConditionModal: React.FC<ConditionModalProps> = ({
     isOpen,
     onClose,
     nodeId,
-    initialConfig,
 }) => {
     const { allResults } = useSuggestionData();
-    const { updateNodeData } = useReactFlow();
+    const { updateNodeData, getNode } = useReactFlow();
     const nodessugg = getNodeSuggestions(allResults);
+
+    const initialConfig = getNode(nodeId ?? "")?.data as
+        | ConditionNodeData
+        | undefined;
 
     const {
         control,
@@ -49,11 +59,7 @@ export const ConditionModal: React.FC<ConditionModalProps> = ({
         formState: { errors },
     } = useForm<ConditionConfig>({
         resolver: zodResolver(conditionConfigSchema),
-        defaultValues: initialConfig ?? {
-            operator: { type: "string", operation: "equals" },
-            leftValue: "",
-            rightValue: "",
-        },
+        defaultValues: { ...defaults, ...initialConfig?.config },
     });
 
     const onSubmit = (data: ConditionConfig) => {
@@ -67,17 +73,10 @@ export const ConditionModal: React.FC<ConditionModalProps> = ({
         console.log(data);
         onClose();
     };
+
     useEffect(() => {
-        if (initialConfig) {
-            reset(initialConfig); // <- replace s values when modal opens
-        } else {
-            reset({
-                leftValue: "",
-                operator: { operation: "equals", type: "string" },
-                rightValue: "",
-            });
-        }
-    }, [initialConfig, nodeId, reset]);
+        reset({ ...defaults, ...initialConfig?.config });
+    }, [isOpen, initialConfig]);
 
     return (
         <DialogContainer
