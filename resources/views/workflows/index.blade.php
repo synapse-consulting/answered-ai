@@ -166,7 +166,7 @@ function getMetaContent(name) {
                         });
                         console.log(response);
 
-                        if (!response.ok) throw new Error('Failed to create intent');
+                        if (!response.ok) throw new Error('Failed to create workflow');
 
                         const data = await response.json();
 
