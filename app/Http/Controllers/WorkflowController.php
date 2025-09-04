@@ -30,7 +30,6 @@ class WorkflowController extends Controller
     
     function store(Request $request){
         $workflow = Workflow::create($request->all());
-        dd($workflow);
         return response()->json(['workflow' => $workflow]); 
     }
 
