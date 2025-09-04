@@ -187,7 +187,7 @@ function getMetaContent(name) {
                         };
                     } catch (error) {
                         console.error('Error:', error);
-                        alert('Failed to create intent');
+                        alert('Failed to create workflow');
                     }
                 },
 
@@ -204,7 +204,7 @@ function getMetaContent(name) {
                             body: JSON.stringify(this.form)
                         });
 
-                        if (!response.ok) throw new Error('Failed to update intent');
+                        if (!response.ok) throw new Error('Failed to update workflow');
 
                         const index = this.workflows.findIndex(i => i.id === this.form.id);
                         this.workflows[index] = {
@@ -218,7 +218,7 @@ function getMetaContent(name) {
                             description: ''
                         };
                     } catch (error) {
-                        console.error('Error:', error);
+                        console.error('Error creating workflow: ', error);
                         alert('Failed to update workflow');
                     }
                 },
