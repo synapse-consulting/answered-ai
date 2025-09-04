@@ -153,6 +153,7 @@ function getMetaContent(name) {
                 async createWorkflow() {
                     try {
                         const url = getMetaContent('app-url') + '/workflows/';
+                        console.log(url);
                         const response = await fetch(url, {
                             method: 'POST',
                             headers: {
@@ -163,6 +164,7 @@ function getMetaContent(name) {
                             },
                             body: JSON.stringify(this.form)
                         });
+                        console.log(response);
 
                         if (!response.ok) throw new Error('Failed to create intent');
 
