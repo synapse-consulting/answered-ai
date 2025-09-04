@@ -16,7 +16,7 @@ class CredentialController extends Controller
             'company_id' => 'required|integer'
         ]); 
 
-        $credentials = Credential::with('company_id', $request->company_id)->where('company_id')->get();
+        $credentials = Credential::where('company_id', $request->company_id)->get();
         return response()->json(['credentials' => $credentials]);
     }
 
