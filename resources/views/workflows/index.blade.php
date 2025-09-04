@@ -174,7 +174,7 @@ function getMetaContent(name) {
                             id: data.workflow.id
                         });
 
-                        window.location.href = `${url}/${data.workflow.id}/edit?id=data.workflow.id`;
+                        window.location.href = `${url}/${data.workflow.id}/edit?id=${data.workflow.id}`;
 
                         this.showCreateModal = false;
 
