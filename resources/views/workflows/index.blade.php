@@ -152,7 +152,7 @@ function getMetaContent(name) {
 
                 async createWorkflow() {
                     try {
-                        const url = getMetaContent('app-url') + '/workflows/';
+                        const url = getMetaContent('app-url') + '/workflows';
                         console.log(url);
                         const response = await fetch(url, {
                             method: 'POST',
