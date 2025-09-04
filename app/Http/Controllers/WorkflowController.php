@@ -33,7 +33,7 @@ class WorkflowController extends Controller
         return response()->json(['workflow' => $workflow]); 
     }
 
-    function edit(Workflow $workflow){
+    function edit(Request $request, Workflow $workflow){             
         return view('layouts/react-app');    
     }
 
