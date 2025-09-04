@@ -18,7 +18,6 @@ export function createNodeStructured(nodes: NodeType[], edges: Edge[]) {
     view: it.data.view ?? {},
     result: it.data.result ?? {},
     config: it.data.config ?? {},
-    metadata: it.data.metadata ?? {},
     isConfigured: it.data.isConfigured ?? false,
   }
 }));

@@ -14,13 +14,15 @@ import TriggerNode from "../nodes/trigger/TriggerNode";
 import ConditionNode from "../nodes/condition/ConditionNode";
 import ScheduleNode from "../nodes/schedule/ScheduleNode";
 import { ScheduelModal } from "../nodes/schedule/ScheduelModal";
+import NotificationNode from "../nodes/notification/NotificationNode";
 // import ConnectionLine from "../components/node/ConnectionLine";
 // import { ShadcnExamples } from "../examples/ShadcnExamples";
 
 const customNodeTypes: Record<NodeTypes, React.ComponentType<any>> = {
     trigger: TriggerNode,
     httpRequest: HttpRequestNode,
-    notification: CustomNode,
+    // notification: CustomNode,
+    notification: NotificationNode,
     crm: CustomNode,
     condition: ConditionNode,
     schedule: ScheduleNode,
@@ -41,30 +43,24 @@ export default function WorkflowBuilder() {
         handleNodeClick,
     } = useWorkflowState();
 
-    const httpRequestConfig =
-        selectedNode?.data && "config" in selectedNode.data
-            ? (selectedNode.data as any).config
-            : undefined;
-    const notificationConfig =
-        selectedNode?.data && "config" in selectedNode.data
-            ? (selectedNode.data as any).config
-            : undefined;
-    const crmConfig =
-        selectedNode?.data && "config" in selectedNode.data
-            ? (selectedNode.data as any).config
-            : undefined;
+    // const notificationConfig =
+    //     selectedNode?.data && "config" in selectedNode.data
+    //         ? (selectedNode.data as any).config
+    //         : undefined;
+    // const crmConfig =
+    //     selectedNode?.data && "config" in selectedNode.data
+    //         ? (selectedNode.data as any).config
+    //         : undefined;
 
-    const conditionConfig =
-        selectedNode?.data && "config" in selectedNode.data
-            ? (selectedNode.data as any).config
-            : undefined;
-
+    // const conditionConfig =
+    //     selectedNode?.data && "config" in selectedNode.data
+    //         ? (selectedNode.data as any).config
+    //         : undefined;
 
     const scheduelConfig =
         selectedNode?.data && "scheduelConfig" in selectedNode.data
             ? (selectedNode.data as any).scheduelConfig
             : undefined;
-
 
     // useEffect(() => {
     //     var handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -84,14 +80,18 @@ export default function WorkflowBuilder() {
         async function LoadWorkFlow() {
             const url = window.location.pathname;
             const parts = url.split("/");
-            const workflowId = parts[2];
+            const workflowId = parts[3];
+            // const baseUrl = import.meta.env.VITE_APP_URL;
             try {
-                const response = await fetch(`/api/workflow/${workflowId}`, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                });
+                const response = await fetch(
+                    `https://synapse.com.pk/answered-ai/api/workflow/${workflowId}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
 
                 if (!response.ok) {
                     throw new Error(
@@ -151,28 +151,24 @@ export default function WorkflowBuilder() {
                 isOpen={selectedNode?.type === NODE_TYPES.HTTP_REQUEST}
                 onClose={() => setSelectedNode(null)}
                 nodeId={selectedNode?.id}
-                initialConfig={httpRequestConfig}
             />
 
             <NotificationModal
                 isOpen={selectedNode?.type === NODE_TYPES.NOTIFICATION}
                 onClose={() => setSelectedNode(null)}
                 nodeId={selectedNode?.id}
-                initialConfig={notificationConfig}
             />
 
             <CrmModal
                 isOpen={selectedNode?.type === NODE_TYPES.CRM}
                 onClose={() => setSelectedNode(null)}
                 nodeId={selectedNode?.id}
-                initialConfig={crmConfig}
             />
 
             <ConditionModal
                 isOpen={selectedNode?.type === NODE_TYPES.CONDITION}
                 onClose={() => setSelectedNode(null)}
                 nodeId={selectedNode?.id}
-                initialConfig={conditionConfig}
             />
 
             <ScheduelModal

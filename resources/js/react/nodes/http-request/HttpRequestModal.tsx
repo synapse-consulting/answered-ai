@@ -6,11 +6,32 @@ import { TextareaField } from "../../components/ui/TextareaField";
 import { CheckboxField } from "../../components/ui/CheckboxField";
 import { KeyValueEditor } from "../../components/ui/KeyValueEditor";
 import { CustomButton as Button } from "../../components/ui/Button";
-import { HTTP_METHODS, AUTH_TYPES } from "../../types";
+import { HTTP_METHODS, AUTH_TYPES, BaseNodeData } from "../../types";
 import { useReactFlow } from "@xyflow/react";
-import { HttpConfig, HttpConfigSchema } from "./types";
+import { HttpConfig, HttpConfigSchema, HttpRequestNodeData } from "./types";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+
+const defaults: HttpConfig = {
+    method: "GET",
+    url: "",
+    queryParams: [],
+    headers: [],
+    body: {
+        contentType: "none",
+        content: "",
+    },
+    auth: {
+        type: "none",
+        username: "",
+        password: "",
+        token: "",
+    },
+    options: {
+        followRedirects: true,
+        verifySSL: true,
+    },
+};
 
 interface HttpRequestModalProps {
     isOpen: boolean;
@@ -23,25 +44,15 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
     isOpen,
     onClose,
     nodeId,
-    initialConfig,
 }) => {
-    const { updateNodeData } = useReactFlow();
+    const { updateNodeData, getNode } = useReactFlow();
+    const initialConfig = getNode(nodeId ?? "")?.data as
+        | HttpRequestNodeData
+        | undefined;
+
     const [error, setError] = React.useState<string | null>(null);
     const [response, setResponse] = React.useState<any | null>(null);
     const [isLoading, setIsLoading] = React.useState(false);
-
-    const defaults: HttpConfig = {
-        method: "GET",
-        url: "",
-        queryParams: [],
-        headers: [],
-        body: undefined,
-        auth: { type: "none" },
-        options: {
-            followRedirects: true,
-            verifySSL: true,
-        },
-    };
 
     const {
         control,
@@ -49,28 +60,17 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
         reset,
         watch,
         setValue,
+        getValues,
         formState: { errors, isValid },
     } = useForm<HttpConfig>({
         resolver: zodResolver(HttpConfigSchema),
-        defaultValues: initialConfig ?? {
-            method: "GET",
-            url: "",
-            queryParams: [],
-            headers: [],
-            body: undefined,
-            auth: { type: "none" },
-            options: {
-                followRedirects: true,
-                verifySSL: true,
-            },
-        },
+        defaultValues: { ...defaults, ...initialConfig?.config },
     });
 
-    React.useEffect(() => {
-        if (initialConfig) {
-            reset({ ...defaults, ...initialConfig });
-        }
-    }, [initialConfig]);
+    useEffect(() => {
+        reset({ ...defaults, ...initialConfig?.config });
+        setResponse(initialConfig?.result || null);
+    }, [isOpen, initialConfig]);
 
     const updateBody = (contentType: string, content?: string) => {
         if (contentType === "none") {
@@ -137,7 +137,8 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
     };
 
     const handleSave = async (data: HttpConfig) => {
-        if (!nodeId) return;
+        console.log("before node ID");
+        if (!nodeId) return console.log("No node ID");
 
         setError(null);
         setIsLoading(true);
@@ -197,10 +198,10 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
                     ...currentData,
                     config: data,
                     result,
-                    metadata: data,
-                    executionStatus: "Completed",
+                    isConfigured: true,
                 };
             });
+            console.log(data);
             setResponse(result); // Update local state too
         } catch (error: any) {
             setError(
@@ -317,7 +318,7 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
                             <Controller
                                 name="url"
                                 control={control}
-                                render={({ field, fieldState }) => (
+                                render={({ field }) => (
                                     <FormField
                                         label="URL"
                                         value={field.value}
@@ -325,7 +326,7 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
                                         placeholder="https://api.example.com/endpoint"
                                         type="url"
                                         required
-                                        error={fieldState.error?.message || ""}
+                                        error={errors.url?.message || ""}
                                     />
                                 )}
                             />

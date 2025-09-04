@@ -11,73 +11,59 @@ interface Props {}
 
 const Sidebar = () => {
     const [searchQuery, setSearchQuery] = useState("");
+    const [loading, setLoading] = useState<boolean>(false);
 
     const { addNodes, getNodes, getEdges } = useReactFlow<NodeType>();
     const nodes = useNodes<NodeType>();
 
     let nodeIdCounter = Date.now();
     const onSave = async () => {
+        setLoading(true);
+        // Create Node Structure
         const structuredNodes = createNodeStructured(nodes, getEdges());
-        // Example: Fetch data from an API
-
-        try {
-            const response = await fetch(
-                "https://jsonplaceholder.typicode.com/posts",
-                {
-                    method: "PUT", // or "POST", "PUT", "DELETE"
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(structuredNodes),
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            console.log("Fetched data:", data);
-        } catch (error) {
-            console.error("Fetch error:", error);
-        }
-
         console.log("🍪 SIDEBAR.TSX ==> onSave", structuredNodes);
 
+        // Get the workflow ID from the URL
         const url = window.location.pathname;
         const parts = url.split("/");
-        const workflowId = parts[2];
+        const workflowId = parts[3];
 
+        const baseUrl = import.meta.env.VITE_APP_URL;
+
+        // Get existing name and description
         try {
-            const data = await fetch(`/api/workflow/${workflowId}`).then(
-                (res) => res.json()
-            );
+            const data = await fetch(
+                `https://synapse.com.pk/answered-ai/api/workflow/${workflowId}`
+            ).then((res) => res.json());
             var description = data.Workflow.description;
             var name = data.Workflow.name;
         } catch (error) {
             console.log("Untitled Workflow");
         }
 
+        // Saving the workflow
         try {
-            const response = await fetch(`/api/workflow/${workflowId}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    name: name || "Untitled Workflow",
-                    description: description || "",
-                    executable_flow: structuredNodes,
-                }),
-            });
+            const response = await fetch(
+                `https://synapse.com.pk/answered-ai/api/workflow/${workflowId}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        name: name || "Untitled Workflow",
+                        description: description || "",
+                        executable_flow: structuredNodes,
+                    }),
+                }
+            );
 
+            setLoading(false);
             if (!response.ok) {
                 toast.error(`Failed to save. Status: ${response.status}`);
             } else {
                 toast.success("Workflow saved successfully!");
             }
-            // const result = await response.json();
-            // console.log("Save successful:", result);
         } catch (error) {
             console.error("Error saving nodes:", error);
             toast(`Error saving nodes`);
@@ -89,8 +75,6 @@ const Sidebar = () => {
         const lastNode = getNodes()[getNodes().length - 1];
         const lastNodePosition = lastNode?.position;
 
-        // const nodeLength = getNodes().length;
-        // console.log(nodeLength);
         const nodes = getNodes();
         const typeCount = nodes.filter((n) => n.type === item.type).length;
 
@@ -106,7 +90,7 @@ const Sidebar = () => {
             data: {
                 view: { ...item, name: itemLabel + (typeCount + 1) },
                 result: null,
-                metadata: {},
+                config: {},
             },
         };
         // console.log(newNode);
@@ -186,11 +170,12 @@ const Sidebar = () => {
             <div className="pt-4 border-t border-gray-700">
                 <button
                     onClick={onSave}
+                    disabled={loading}
                     className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-white 
             font-medium text-sm rounded-lg transition-all duration-200 
             focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 
             focus:ring-offset-gray-800 transform hover:scale-105 active:scale-95 
-            shadow-lg hover:shadow-xl"
+            shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     Save Workflow
                 </button>

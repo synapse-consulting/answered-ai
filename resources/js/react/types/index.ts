@@ -9,7 +9,7 @@ export type RecordUnknown = Record<string, unknown>;
 export interface BaseNodeData<T extends RecordUnknown = RecordUnknown> extends RecordUnknown {
   view: NodeView;
   executionStatus?: ExecutionStatus;
-  metadata: T;
+  config: T;
   result: any
 }
 
@@ -46,15 +46,26 @@ export interface NodeType extends Node<BaseNodeData<RecordUnknown>, NodeTypes> {
 export const NotificationConfigSchema = z.object({
   type: z.enum(['email', 'slack', 'sms', 'webhook']),
   recipients: z.array(KeyValuePairSchema),
-  subject: z.string().optional(),
+  subject: z.string().optional().nullable(),
   message: z.string().min(1, "Message is required"),
-  template: z.string().optional(),
-  enableLogging: z.boolean().optional(),
-  autoRetry: z.boolean().optional()
+  template: z.string().optional().nullable(),
+  enableLogging: z.boolean().optional().nullable(),
+  autoRetry: z.boolean().optional().nullable()
 })
 
 export type NotificationConfig = z.infer<typeof NotificationConfigSchema>
 
+export const CredentialConfigSchema = z.object({
+  type: z.enum(['email', 'slack', 'sms', 'webhook']),
+  credentials: z.object({
+    host: z.string().optional().nullable(),
+    port: z.string().optional().nullable(),
+    encryption: z.string().optional().nullable(),
+    username: z.string().optional().nullable(),
+    password: z.string().optional().nullable(),
+  })
+})
+export type CredentialConfig = z.infer<typeof CredentialConfigSchema>
 
 
 export const CrmConfigSchema = z.object({
@@ -99,6 +110,7 @@ export const ScheduelConfigSchema = z.object({
 export type ScheduelConfig = z.infer<typeof ScheduelConfigSchema>
 
 export interface NotificationNodeData extends BaseNodeData<NotificationConfig> {}
+
 
 export interface CrmNodeData extends BaseNodeData<CrmConfig> {}
 

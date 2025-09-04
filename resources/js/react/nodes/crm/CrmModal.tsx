@@ -4,7 +4,7 @@ import DialogContainer from "../../components/DialogContainer";
 import { SelectField } from "../../components/ui/SelectField";
 import { KeyValueEditor } from "../../components/ui/KeyValueEditor";
 import { CheckboxField } from "../../components/ui/CheckboxField";
-import { CrmConfig, CrmConfigSchema } from "../../types";
+import { CrmConfig, CrmConfigSchema, CrmNodeData } from "../../types";
 import { useReactFlow } from "@xyflow/react";
 import { SuggestiveInput } from "@/react/components/ui/SuggestiveInput";
 import { getNodeSuggestions } from "../../utils/jsonTraverser";
@@ -14,30 +14,32 @@ import { zodResolver } from "@hookform/resolvers/zod";
 // import { de } from "zod/v4/locales";
 // import { fi } from "zod/v4/locales";
 
-// const defaultValues: CrmConfig = {
-//     provider: "hubspot",
-//     action: "create",
-//     object: "contact",
-//     fields: [],
-//     apiKey: "",
-//     enableLogging: true,
-//     autoRetry: false,
-// };
+const defaultValues: CrmConfig = {
+    provider: "hubspot",
+    action: "create",
+    object: "contact",
+    fields: [],
+    apiKey: "",
+    enableLogging: true,
+    autoRetry: false,
+};
 
 interface CrmModalProps {
     isOpen: boolean;
     onClose: () => void;
     nodeId?: string;
-    initialConfig?: CrmConfig;
 }
 
 export const CrmModal: React.FC<CrmModalProps> = ({
     isOpen,
     onClose,
     nodeId,
-    initialConfig,
 }) => {
-    const { updateNodeData } = useReactFlow();
+    const { updateNodeData, getNode } = useReactFlow();
+
+    const initialConfig = getNode(nodeId ?? "")?.data as
+        | CrmNodeData
+        | undefined;
     // const [config, setConfig] = useState<CrmConfig>(
     //     initialConfig || defaultValues
     // );
@@ -49,15 +51,16 @@ export const CrmModal: React.FC<CrmModalProps> = ({
         formState: { errors, isValid },
     } = useForm<CrmConfig>({
         resolver: zodResolver(CrmConfigSchema),
-        defaultValues: initialConfig ?? {
-            provider: "hubspot",
-            action: "create",
-            object: "contact",
-            fields: [],
-            apiKey: "",
-            enableLogging: true,
-            autoRetry: false,
-        },
+        defaultValues: { ...defaultValues, ...initialConfig?.config },
+        // defaultValues: initialConfig ?? {
+        //     provider: "hubspot",
+        //     action: "create",
+        //     object: "contact",
+        //     fields: [],
+        //     apiKey: "",
+        //     enableLogging: true,
+        //     autoRetry: false,
+        // },
     });
 
     // useEffect(() => {
@@ -77,62 +80,26 @@ export const CrmModal: React.FC<CrmModalProps> = ({
         }
     };
 
-    useEffect(() => {
-        if (isOpen) {
-            reset(
-                initialConfig || {
-                    provider: "hubspot",
-                    action: "create",
-                    object: "contact",
-                    fields: [],
-                    apiKey: "",
-                    enableLogging: true,
-                    autoRetry: false,
-                }
-            );
+    // useEffect(() => {
+    //     if (isOpen) {
+    //         reset(
+    //             initialConfig || {
+    //                 provider: "hubspot",
+    //                 action: "create",
+    //                 object: "contact",
+    //                 fields: [],
+    //                 apiKey: "",
+    //                 enableLogging: true,
+    //                 autoRetry: false,
+    //             }
+    //         );
+    //     }
+    // }, [isOpen, initialConfig, reset]);
+    React.useEffect(() => {
+        if (initialConfig) {
+            reset({ ...defaultValues, ...initialConfig?.config });
         }
-    }, [isOpen, initialConfig, reset]);
-
-    // const validateConfig = (): string[] => {
-    //     const errors: string[] = [];
-    //     if (!config.apiKey.trim()) {
-    //         errors.push("API Key is required");
-    //     }
-    //     if (!config.object.trim()) {
-    //         errors.push("Object type is required");
-    //     }
-    //     if (config.fields.length === 0) {
-    //         errors.push("At least one field mapping is required");
-    //     }
-    //     return errors;
-    // };
-
-    // const addField = () => {
-    //     setConfig((prev) => ({
-    //         ...prev,
-    //         fields: [...prev.fields, { key: "", value: "" }],
-    //     }));
-    // };
-
-    // const updateField = (
-    //     index: number,
-    //     field: "key" | "value",
-    //     value: string
-    // ) => {
-    //     setConfig((prev) => ({
-    //         ...prev,
-    //         fields: prev.fields.map((fieldItem, i) =>
-    //             i === index ? { ...fieldItem, [field]: value } : fieldItem
-    //         ),
-    //     }));
-    // };
-
-    // const removeField = (index: number) => {
-    //     setConfig((prev) => ({
-    //         ...prev,
-    //         fields: prev.fields.filter((_, i) => i !== index),
-    //     }));
-    // };
+    }, [initialConfig, isOpen]);
 
     const providerOptions = [
         { value: "hubspot", label: "HubSpot" },
@@ -196,7 +163,7 @@ export const CrmModal: React.FC<CrmModalProps> = ({
                                 <SelectField
                                     label="CRM Provider"
                                     // {...field}
-                                    value={field.value || "hubspot"}
+                                    value={field.value}
                                     onChange={field.onChange}
                                     options={providerOptions}
                                     required
@@ -211,7 +178,7 @@ export const CrmModal: React.FC<CrmModalProps> = ({
                                 <SelectField
                                     label="Action"
                                     // {...field}
-                                    value={field.value || "create"}
+                                    value={field.value}
                                     onChange={field.onChange}
                                     options={actionOptions}
                                     required
@@ -225,7 +192,7 @@ export const CrmModal: React.FC<CrmModalProps> = ({
                                 <SelectField
                                     label="Object Type"
                                     // {...field}
-                                    value={field.value || "contact"}
+                                    value={field.value}
                                     onChange={field.onChange}
                                     options={objectOptions}
                                     required
@@ -258,7 +225,7 @@ export const CrmModal: React.FC<CrmModalProps> = ({
                         render={({ field }) => (
                             <KeyValueEditor
                                 label="Field Mappings"
-                                items={field.value || []}
+                                items={field.value}
                                 onAdd={() =>
                                     field.onChange([
                                         ...field.value,

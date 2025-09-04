@@ -62,8 +62,6 @@ export const ConditionModal: React.FC<ConditionModalProps> = ({
             ...currentData,
             conditionConfig: data,
             config: data,
-            // result: data,
-            // metadata: data,
             isConfigured: true,
         }));
         console.log(data);
