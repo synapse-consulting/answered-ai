@@ -17,6 +17,7 @@ import useSuggestionData from "../hooks/useSuggestionData";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CredentialsModal } from "./CredentialsModal";
+import { SuggestiveTextarea } from "@/react/components/ui/SuggestiveTextarea";
 
 interface NotificationModalProps {
     isOpen: boolean;
@@ -24,15 +25,20 @@ interface NotificationModalProps {
     nodeId?: string;
 }
 
+type SelectOption = {
+    value: string;
+    label: string;
+};
+
 const defaultValues: NotificationConfig = {
-    credential: "credentials1",
+    credential: "",
     type: "email",
     recipients: [],
+    fromEmail: "",
+    toEmail: "",
     subject: "",
     message: "",
     template: "",
-    enableLogging: true,
-    autoRetry: false,
 };
 
 export const NotificationModal: React.FC<NotificationModalProps> = ({
@@ -42,6 +48,9 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
 }) => {
     const { updateNodeData, getNode } = useReactFlow();
     const [showCredentialsModal, setShowCredentialsModal] = useState(false);
+    const [credentialsOptions, setCredentialsOptions] = useState<
+        SelectOption[]
+    >([]);
 
     const initialConfig = getNode(nodeId ?? "")?.data as
         | NotificationNodeData
@@ -73,7 +82,6 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             updateNodeData(nodeId, (currentData) => ({
                 ...currentData,
                 config: data,
-                result: data,
                 isConfigured: true,
             }));
             onClose();
@@ -81,10 +89,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
     };
     useEffect(() => {
         const getCredentials = async () => {
-            // console.log("Saved data:", data);
             const url = new URL(window.location.href);
-            // const parts = url.split("/");
-            // const workflowId = parts[2];
             const id = url.searchParams.get("id");
             console.log(id);
 
@@ -114,10 +119,20 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                 const result = await response.json();
                 if (!response.ok) {
                     // toast.error(`Failed to save. Status: ${response.status}`);
-                    console.log(result);
+                    console.log("credentials:: " + result);
                 } else {
                     // toast.success("Workflow saved successfully!");
                     console.log(result);
+                    const options: SelectOption[] = result.credentials.map(
+                        (cred: any) => ({
+                            value: String(cred.id),
+                            label: cred.name,
+                        })
+                    );
+                    console.log(JSON.stringify(options), "options");
+
+                    // console.log(options + "options");
+                    setCredentialsOptions(options);
                 }
             } catch (error) {
                 console.error("catch error", error);
@@ -125,7 +140,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             }
         };
         getCredentials();
-    }, []);
+    }, [showCredentialsModal]);
 
     const typeOptions = [
         { value: "email", label: "Email" },
@@ -134,17 +149,9 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         { value: "webhook", label: "Webhook" },
     ];
 
-    const credentialsOptions = [
-        { value: "credentials1", label: "credentials1" },
-        { value: "credentials2", label: "credentials2" },
-        { value: "credentials3", label: "credentials3" },
-        { value: "credentials4", label: "credentials4" },
-    ];
-
-    // const errors = validateConfig();
-
     const { allResults } = useSuggestionData();
     const nodessugg = getNodeSuggestions(allResults);
+    console.log(watch("credential"));
 
     return (
         <DialogContainer
@@ -180,9 +187,15 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                         render={({ field }) => (
                             <div className="space-y-2">
                                 <SelectField
+                                    placeholder="Select A Credential"
                                     label="Add Credentials"
+                                    // value={
+                                    //     field.value ? String(field.value) : ""
+                                    // }
                                     value={field.value}
+                                    // onChange={(val) => field.onChange(val)}
                                     onChange={field.onChange}
+                                    // onChange={field.onChange}
                                     options={credentialsOptions}
                                     required
                                 />
@@ -215,6 +228,44 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                         )}
                     />
 
+                    {watch("type") == "email" && (
+                        <Controller
+                            name="fromEmail"
+                            control={control}
+                            render={({ field }) => (
+                                <SuggestiveInput
+                                    label="Email From"
+                                    value={field.value || ""}
+                                    onChange={field.onChange}
+                                    type="text"
+                                    placeholder="Enter email"
+                                    required
+                                    // error="adsfa"
+                                    suggestions={nodessugg}
+                                />
+                            )}
+                        />
+                    )}
+
+                    {watch("type") == "email" && (
+                        <Controller
+                            name="toEmail"
+                            control={control}
+                            render={({ field }) => (
+                                <SuggestiveInput
+                                    label="Email Send To"
+                                    value={field.value || ""}
+                                    onChange={field.onChange}
+                                    type="text"
+                                    placeholder="Enter email"
+                                    required
+                                    // error="adsfa"
+                                    suggestions={nodessugg}
+                                />
+                            )}
+                        />
+                    )}
+
                     {/* Subject (for email) */}
                     {watch("type") == "email" && (
                         <Controller
@@ -240,12 +291,13 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                         name="message"
                         control={control}
                         render={({ field }) => (
-                            <SuggestiveInput
+                            <SuggestiveTextarea
                                 label="Message"
                                 value={field.value}
                                 onChange={field.onChange}
                                 placeholder="Enter your notification message..."
                                 required
+                                rows={5}
                                 suggestions={nodessugg}
                             />
                         )}
@@ -348,7 +400,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                         <button
                             type="submit"
                             // onClick={handleSave}
-                            disabled={!isValid}
+                            // disabled={!isValid}
                             className={`px-4 py-2 text-sm font-medium text-white rounded-lg shadow-sm 
               focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 
               transition-all duration-200
