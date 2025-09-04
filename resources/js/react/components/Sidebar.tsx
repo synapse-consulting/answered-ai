@@ -23,18 +23,17 @@ const Sidebar = () => {
         const structuredNodes = createNodeStructured(nodes, getEdges());
         console.log("🍪 SIDEBAR.TSX ==> onSave", structuredNodes);
 
-        // Get the workflow ID from the URL
-        const url = window.location.pathname;
-    const parts = url.split("/");
-        const workflowId = parts[3];
+        const baseUrl =
+            document
+                .querySelector('meta[name="app-url"]')
+                ?.getAttribute("content") || "";
 
-        const baseUrl = import.meta.env.VITE_APP_URL;
-
-        // Get existing name and description
+        const url = new URL(window.location.href);
+        const id = url.searchParams.get("id");
         try {
-            const data = await fetch(
-                `https://synapse.com.pk/answered-ai/api/workflow/${workflowId}`
-            ).then((res) => res.json());
+            const data = await fetch(`${baseUrl}/api/workflow/${id}`).then(
+                (res) => res.json()
+            );
             var description = data.Workflow.description;
             var name = data.Workflow.name;
         } catch (error) {
@@ -43,20 +42,17 @@ const Sidebar = () => {
 
         // Saving the workflow
         try {
-            const response = await fetch(
-                `https://synapse.com.pk/answered-ai/api/workflow/${workflowId}`,
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        name: name || "Untitled Workflow",
-                        description: description || "",
-                        executable_flow: structuredNodes,
-                    }),
-                }
-            );
+            const response = await fetch(`${baseUrl}/api/workflow/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    name: name || "Untitled Workflow",
+                    description: description || "",
+                    executable_flow: structuredNodes,
+                }),
+            });
 
             setLoading(false);
             if (!response.ok) {

@@ -16,14 +16,6 @@ import { getNodeSuggestions } from "../../utils/jsonTraverser";
 import useSuggestionData from "../hooks/useSuggestionData";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
-import { PlusIcon } from "lucide-react";
-import {
-    Tooltip,
-    TooltipTrigger,
-    TooltipProvider,
-    TooltipContent,
-} from "@/components/ui/tooltip";
 import { CredentialsModal } from "./CredentialsModal";
 
 interface NotificationModalProps {
@@ -33,6 +25,7 @@ interface NotificationModalProps {
 }
 
 const defaultValues: NotificationConfig = {
+    credential: "credentials1",
     type: "email",
     recipients: [],
     subject: "",
@@ -49,8 +42,6 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
 }) => {
     const { updateNodeData, getNode } = useReactFlow();
     const [showCredentialsModal, setShowCredentialsModal] = useState(false);
-
-    const handleOpen = () => setShowCredentialsModal(true);
 
     const initialConfig = getNode(nodeId ?? "")?.data as
         | NotificationNodeData
@@ -72,6 +63,11 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         }
     }, [initialConfig, isOpen]);
 
+    const baseUrl =
+        document
+            .querySelector('meta[name="app-url"]')
+            ?.getAttribute("content") || "";
+
     const handleSave = (data: NotificationConfig) => {
         if (nodeId) {
             updateNodeData(nodeId, (currentData) => ({
@@ -83,12 +79,66 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             onClose();
         }
     };
+    useEffect(() => {
+        const getCredentials = async () => {
+            // console.log("Saved data:", data);
+            const url = new URL(window.location.href);
+            // const parts = url.split("/");
+            // const workflowId = parts[2];
+            const id = url.searchParams.get("id");
+            console.log(id);
+
+            try {
+                const data = await fetch(`${baseUrl}/api/workflow/${id}`).then(
+                    (res) => res.json()
+                );
+                var company_id = data.Workflow.company_id;
+                console.log(company_id);
+            } catch (error) {
+                console.log("Untitled Workflow");
+            }
+
+            // Saving the workflow
+            try {
+                const response = await fetch(
+                    `${baseUrl}/api/credentials?company_id=${company_id}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+
+                // setLoading(false);
+                const result = await response.json();
+                if (!response.ok) {
+                    // toast.error(`Failed to save. Status: ${response.status}`);
+                    console.log(result);
+                } else {
+                    // toast.success("Workflow saved successfully!");
+                    console.log(result);
+                }
+            } catch (error) {
+                console.error("catch error", error);
+                // toast(`Error saving nodes`);
+            }
+        };
+        getCredentials();
+    }, []);
 
     const typeOptions = [
         { value: "email", label: "Email" },
         { value: "slack", label: "Slack" },
         { value: "sms", label: "SMS" },
         { value: "webhook", label: "Webhook" },
+    ];
+
+    const credentialsOptions = [
+        { value: "credentials1", label: "credentials1" },
+        { value: "credentials2", label: "credentials2" },
+        { value: "credentials3", label: "credentials3" },
+        { value: "credentials4", label: "credentials4" },
     ];
 
     // const errors = validateConfig();
@@ -124,43 +174,46 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                         </div>
                     )}
 
+                    <Controller
+                        name="credential"
+                        control={control}
+                        render={({ field }) => (
+                            <div className="space-y-2">
+                                <SelectField
+                                    label="Add Credentials"
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    options={credentialsOptions}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setShowCredentialsModal(true)
+                                    }
+                                    className="text-sm text-blue-600 hover:underline"
+                                >
+                                    + Add New Credential
+                                </button>
+                            </div>
+                        )}
+                    />
+
                     {/* Notification Type */}
-                    <div className="flex items-center gap-3">
-                        <div className="flex-1">
-                            <Controller
-                                name="type"
-                                control={control}
-                                render={({ field }) => (
-                                    <SelectField
-                                        label="Notification Type"
-                                        value={field.value}
-                                        onChange={field.onChange}
-                                        options={typeOptions}
-                                        required
-                                    />
-                                )}
+
+                    <Controller
+                        name="type"
+                        control={control}
+                        render={({ field }) => (
+                            <SelectField
+                                label="Notification Type"
+                                value={field.value}
+                                onChange={field.onChange}
+                                options={typeOptions}
+                                required
                             />
-                        </div>
-                        <div className="self-end mb-1">
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            onClick={() =>
-                                                setShowCredentialsModal(true)
-                                            }
-                                            type="button"
-                                        >
-                                            <PlusIcon />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        Add Credentials
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                        </div>
-                    </div>
+                        )}
+                    />
 
                     {/* Subject (for email) */}
                     {watch("type") == "email" && (

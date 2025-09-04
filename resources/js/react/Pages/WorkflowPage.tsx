@@ -75,23 +75,22 @@ export default function WorkflowBuilder() {
     //         window.removeEventListener("beforeunload", handleBeforeUnload);
     //     };
     // }, [isSaved, nodes, edges]);
-
+    const baseUrl =
+        document
+            .querySelector('meta[name="app-url"]')
+            ?.getAttribute("content") || "";
     useEffect(() => {
         async function LoadWorkFlow() {
-            const url = window.location.pathname;
-            const parts = url.split("/");
-            const workflowId = parts[3];
+            const url = new URL(window.location.href);
+            const id = url.searchParams.get("id");
             // const baseUrl = import.meta.env.VITE_APP_URL;
             try {
-                const response = await fetch(
-                    `https://synapse.com.pk/answered-ai/api/workflow/${workflowId}`,
-                    {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                    }
-                );
+                const response = await fetch(`${baseUrl}/api/workflow/${id}`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
 
                 if (!response.ok) {
                     throw new Error(
