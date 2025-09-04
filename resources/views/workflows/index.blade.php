@@ -157,6 +157,7 @@ function getMetaContent(name) {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
+                                'Accept': 'application/json',
                                 'X-CSRF-TOKEN': document.querySelector(
                                     'meta[name="csrf-token"]').content
                             },
@@ -166,16 +167,16 @@ function getMetaContent(name) {
                         if (!response.ok) throw new Error('Failed to create intent');
 
                         const data = await response.json();
-                        
+
                         this.workflows.push({
                             ...this.form,
                             id: data.workflow.id
                         });
 
-                        window.location.href=url + data.workflow.id + "/edit?id=" + data.workflow.id;
-                        
+                        window.location.href = url + data.workflow.id + "/edit?id=" + data.workflow.id;
+
                         this.showCreateModal = false;
-                        
+
                         this.form = {
                             id: null,
                             name: '',
