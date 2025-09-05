@@ -44,14 +44,16 @@ export interface NodeType extends Node<BaseNodeData<RecordUnknown>, NodeTypes> {
 // }
 
 export const NotificationConfigSchema = z.object({
-  credential: z.string(),
+  credential: z.string().min(1, "Credentials are required"),
   type: z.enum(['email', 'slack', 'sms', 'webhook']),
   recipients: z.array(KeyValuePairSchema),
+  fromEmail: z.email().optional().nullable(),
+  toEmail: z.email().optional().nullable(),
   subject: z.string().optional().nullable(),
   message: z.string().min(1, "Message is required"),
   template: z.string().optional().nullable(),
-  enableLogging: z.boolean().optional().nullable(),
-  autoRetry: z.boolean().optional().nullable()
+  // enableLogging: z.boolean().optional().nullable(),
+  // autoRetry: z.boolean().optional().nullable()
 })
 
 export type NotificationConfig = z.infer<typeof NotificationConfigSchema>

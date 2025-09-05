@@ -1,16 +1,18 @@
 import React, { useEffect } from "react";
 import DialogContainer from "../../components/DialogContainer";
-import { FormField } from "../../components/ui/FormField";
 import { SelectField } from "../../components/ui/SelectField";
-import { TextareaField } from "../../components/ui/TextareaField";
 import { CheckboxField } from "../../components/ui/CheckboxField";
 import { KeyValueEditor } from "../../components/ui/KeyValueEditor";
 import { CustomButton as Button } from "../../components/ui/Button";
-import { HTTP_METHODS, AUTH_TYPES, BaseNodeData } from "../../types";
+import { HTTP_METHODS, AUTH_TYPES } from "../../types";
 import { useReactFlow } from "@xyflow/react";
 import { HttpConfig, HttpConfigSchema, HttpRequestNodeData } from "./types";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { getNodeSuggestions } from "../../utils/jsonTraverser";
+import useSuggestionData from "../hooks/useSuggestionData";
+import { SuggestiveInput } from "@/react/components/ui/SuggestiveInput";
+import { SuggestiveTextarea } from "@/react/components/ui/SuggestiveTextarea";
 
 const defaults: HttpConfig = {
     method: "GET",
@@ -60,7 +62,6 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
         reset,
         watch,
         setValue,
-        getValues,
         formState: { errors, isValid },
     } = useForm<HttpConfig>({
         resolver: zodResolver(HttpConfigSchema),
@@ -74,6 +75,7 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
 
     const updateBody = (contentType: string, content?: string) => {
         if (contentType === "none") {
+            setValue("body.contentType", "none");
             setValue("body", undefined); // remove body
         } else {
             setValue("body", {
@@ -176,6 +178,7 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
                 if (data.body?.contentType) {
                     options.headers = {
                         ...options.headers,
+                        Accept: "application/json",
                         "Content-Type": data.body.contentType,
                     };
                 }
@@ -256,6 +259,9 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
         { value: "text/plain", label: "Raw" },
     ];
 
+    const { allResults } = useSuggestionData();
+    const nodessugg = getNodeSuggestions(allResults);
+
     // const errors = validateConfig();
 
     return (
@@ -268,32 +274,6 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
         >
             <div className="space-y-6">
                 <form onSubmit={handleSubmit(handleSave)}>
-                    {/* API Error */}
-                    {error && (
-                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                            <h4 className="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
-                                Request Failed
-                            </h4>
-                            <p className="text-sm text-red-700 dark:text-red-300">
-                                {error}
-                            </p>
-                        </div>
-                    )}
-
-                    {/* Validation Errors */}
-                    {/* {errors.length > 0 && (
-                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                        <h4 className="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
-                            Please fix the following errors:
-                        </h4>
-                        <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
-                            {errors.map((error, index) => (
-                                <li key={index}>• {error}</li>
-                            ))}
-                        </ul>
-                    </div>
-                )} */}
-
                     {/* Basic Configuration */}
                     <div className="grid grid-cols-4 gap-4">
                         <div className="col-span-1">
@@ -319,13 +299,14 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
                                 name="url"
                                 control={control}
                                 render={({ field }) => (
-                                    <FormField
+                                    <SuggestiveInput
                                         label="URL"
                                         value={field.value}
                                         onChange={field.onChange}
                                         placeholder="https://api.example.com/endpoint"
                                         type="url"
                                         required
+                                        suggestions={nodessugg}
                                         error={errors.url?.message || ""}
                                     />
                                 )}
@@ -390,12 +371,13 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
                                     name="auth.username"
                                     control={control}
                                     render={({ field, fieldState }) => (
-                                        <FormField
+                                        <SuggestiveInput
                                             label="Username"
                                             value={field.value || ""}
                                             onChange={field.onChange}
                                             placeholder="Enter username"
                                             required
+                                            suggestions={nodessugg}
                                             error={
                                                 fieldState.error?.message || ""
                                             }
@@ -406,13 +388,14 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
                                     name="auth.password"
                                     control={control}
                                     render={({ field, fieldState }) => (
-                                        <FormField
+                                        <SuggestiveInput
                                             label="Password"
                                             value={field.value || ""}
                                             onChange={field.onChange}
                                             placeholder="Enter password"
                                             type="password"
                                             required
+                                            suggestions={nodessugg}
                                             error={
                                                 fieldState.error?.message || ""
                                             }
@@ -427,12 +410,13 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
                                 name="auth.token"
                                 control={control}
                                 render={({ field, fieldState }) => (
-                                    <FormField
+                                    <SuggestiveInput
                                         label="Bearer Token"
                                         value={field.value || ""}
                                         onChange={field.onChange}
                                         placeholder="Enter bearer token"
                                         required
+                                        suggestions={nodessugg}
                                         error={fieldState.error?.message || ""}
                                     />
                                 )}
@@ -463,16 +447,17 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
                                     name="body.content"
                                     control={control}
                                     render={({ field, fieldState }) => (
-                                        <TextareaField
+                                        <SuggestiveTextarea
                                             label="Body Content"
                                             value={field.value || ""}
-                                            onChange={(value) =>
-                                                updateBody(
-                                                    watch("body.contentType") ||
-                                                        "",
-                                                    value
-                                                )
-                                            }
+                                            // onChange={(value) =>
+                                            //     updateBody(
+                                            //         watch("body.contentType") ||
+                                            //             "",
+                                            //         value
+                                            //     )
+                                            // }
+                                            onChange={field.onChange}
                                             placeholder={
                                                 watch("body.contentType") ===
                                                 "application/json"
@@ -480,6 +465,7 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
                                                     : "Enter request body"
                                             }
                                             rows={5}
+                                            suggestions={nodessugg}
                                             error={
                                                 fieldState.error?.message || ""
                                             }
@@ -524,6 +510,16 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
                     </div>
 
                     {/* Response Section */}
+                    {error && (
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 my-5">
+                            <h4 className="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
+                                Request Failed
+                            </h4>
+                            <p className="text-sm text-red-700 dark:text-red-300">
+                                {error}
+                            </p>
+                        </div>
+                    )}
                     {response && (
                         <div className="space-y-2">
                             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">

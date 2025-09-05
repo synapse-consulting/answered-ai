@@ -54,21 +54,14 @@ export const CredentialsModal: React.FC<CredentialModalProps> = ({
             ?.getAttribute("content") || "";
 
     const handleSave = async (data: CredentialConfig) => {
-        // console.log("Saved data:", data);
         const url = new URL(window.location.href);
-        // const parts = url.split("/");
-        // const workflowId = parts[2];
         const id = url.searchParams.get("id");
-        console.log(id);
 
         try {
             const data = await fetch(`${baseUrl}/api/workflow/${id}`).then(
                 (res) => res.json()
             );
             var company_id = data.Workflow.company_id;
-            // var name = data.Workflow.name;
-            console.log(data);
-            console.log(company_id);
         } catch (error) {
             console.log("Untitled Workflow");
         }
@@ -92,11 +85,12 @@ export const CredentialsModal: React.FC<CredentialModalProps> = ({
             if (!response.ok) {
                 toast.error(`Failed to save. Status: ${response.status}`);
             } else {
-                toast.success("Workflow saved successfully!");
+                reset();
+                onClose();
             }
         } catch (error) {
-            console.error("Error saving nodes:", error);
-            toast(`Error saving nodes`);
+            console.error("Error Saving Credentials:", error);
+            toast(`Error Saving Credentials`);
         }
     };
 
@@ -106,8 +100,6 @@ export const CredentialsModal: React.FC<CredentialModalProps> = ({
         { value: "sms", label: "SMS" },
         { value: "webhook", label: "Webhook" },
     ];
-
-    // const errors = validateConfig();
 
     const { allResults } = useSuggestionData();
     const nodessugg = getNodeSuggestions(allResults);

@@ -4,6 +4,9 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { KeyValuePair } from "../../types";
+import { getNodeSuggestions } from "../../utils/jsonTraverser";
+import useSuggestionData from "@/react/nodes/hooks/useSuggestionData";
+import { SuggestiveInput } from "./SuggestiveInput";
 
 interface Props {
     label: string;
@@ -25,6 +28,8 @@ export const KeyValueEditor = ({
     valuePlaceholder = "Value",
 }: Props) => {
     const safeItems = Array.isArray(items) ? items : [];
+    const { allResults } = useSuggestionData();
+    const nodessugg = getNodeSuggestions(allResults);
     return (
         <div className="space-y-3">
             <div className="flex justify-between items-center">
@@ -47,24 +52,34 @@ export const KeyValueEditor = ({
                 <div className="space-y-2">
                     {items.map((item, index) => (
                         <div key={index} className="flex gap-2 items-center">
-                            <Input
-                                type="text"
-                                value={item.key ?? null}
-                                onChange={(e) =>
-                                    onUpdate(index, "key", e.target.value)
-                                }
-                                placeholder={keyPlaceholder}
-                                className="flex-1"
-                            />
-                            <Input
-                                type="text"
-                                value={item.value ?? null}
-                                onChange={(e) =>
-                                    onUpdate(index, "value", e.target.value)
-                                }
-                                placeholder={valuePlaceholder}
-                                className="flex-1"
-                            />
+                            <div className="flex-1">
+                                <SuggestiveInput
+                                    label=""
+                                    type="text"
+                                    value={item.key ?? null}
+                                    // onChange={(e) =>
+                                    //     onUpdate(index, "key", e.target.value)
+                                    // }
+                                    onChange={(val) =>
+                                        onUpdate(index, "key", val)
+                                    } // ✅ string
+                                    placeholder={keyPlaceholder}
+                                    suggestions={nodessugg}
+                                    // className="flex-1"
+                                />
+                            </div>
+                            <div className="flex-1">
+                                <SuggestiveInput
+                                    label=""
+                                    type="text"
+                                    value={item.value ?? null}
+                                    onChange={(val) =>
+                                        onUpdate(index, "value", val)
+                                    }
+                                    placeholder={valuePlaceholder}
+                                    suggestions={nodessugg}
+                                />
+                            </div>
                             <Button
                                 type="button"
                                 variant="ghost"

@@ -110,13 +110,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Add keyboard event listener for "/" key
-  document.addEventListener("keydown", function (event) {
-    if (event.key === "/" && document.activeElement !== searchInput) {
-      event.preventDefault(); // Prevent the "/" character from being typed
-      focusSearchInput();
-    }
-  });
+
 });
 
 
