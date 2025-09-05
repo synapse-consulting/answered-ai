@@ -1,0 +1,43 @@
+name: Deploy Answered to SSH Server
+
+on:
+  push:
+    branches:
+      - main 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4 
+
+      - name: Set up SSH Agent
+        uses: webfactory/ssh-agent@v0.8.0 
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan 165.227.116.180 >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy and Clear Cache
+        run: |
+          ssh -o StrictHostKeyChecking=no root@165.227.116.180 << 'EOF'
+            # Navigate to your Laravel project directory
+            cd /var/www/html/answered-ai/
+
+            # Pull the latest changes from your repository
+            git pull
+
+            # Run Laravel optimization commands
+            php artisan cache:clear
+            php artisan config:clear
+            php artisan route:clear
+            php artisan view:clear
+
+          EOF
+       
