@@ -6,6 +6,7 @@ class IntegrationEnum
 {
     const SMTP  = 'smtp';
     const SLACK = 'slack';
+    const SCHEDULE = 'schedule'; 
 
  
     public static function all(): array

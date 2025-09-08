@@ -34,6 +34,8 @@ class IntegrationRequest extends BaseApiRequest
         return match ($this->input('type')) {
             IntegrationEnum::SMTP => \App\DTOs\SmtpConfigDTO::fromArray($this->input('configuration')),
             IntegrationEnum::SLACK => \App\DTOs\SlackDTO::fromArray($this->input('configuration')),
+            IntegrationEnum::SCHEDULE => \App\DTOs\ScheduleDTO::fromArray($this->input('configuration')),
+            
             default => throw new \InvalidArgumentException("Unsupported integration type"),
         };
     }

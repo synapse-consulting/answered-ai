@@ -16,6 +16,9 @@ class IntegrationService
             case IntegrationEnum::SLACK:
                     new Integrations\SlackService($dto);
                 break;
+            case IntegrationEnum::SCHEDULE:
+                    new Integrations\ScheduleService($dto);
+                break;
             
             default:
                
