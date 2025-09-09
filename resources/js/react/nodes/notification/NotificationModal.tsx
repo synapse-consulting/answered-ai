@@ -31,9 +31,9 @@ type SelectOption = {
 };
 
 const defaultValues: NotificationConfig = {
-    type: "email",
+    type: "smtp",
     configuration: {
-        credential: "",
+        credentialId: "",
         recipients: [],
         fromEmail: "",
         toEmail: "",
@@ -94,11 +94,11 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                     },
                 };
 
-            case "email":
+            case "smtp":
                 return {
                     type,
                     configuration: {
-                        credential: configuration.credential,
+                        credentialId: configuration.credentialId,
                         recipients: configuration.recipients,
                         fromEmail: configuration.fromEmail,
                         toEmail: configuration.toEmail,
@@ -112,7 +112,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                 return {
                     type,
                     configuration: {
-                        credential: configuration.credential,
+                        credentialId: configuration.credentialId,
                         webhookUrl: configuration.webhookUrl || undefined,
                         message: configuration.message,
                     },
@@ -122,7 +122,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                 return {
                     type,
                     configuration: {
-                        credential: configuration.credential,
+                        credentialId: configuration.credentialId,
                         recipients: configuration.recipients,
                         message: configuration.message,
                     },
@@ -206,7 +206,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
     }, [showCredentialsModal]);
 
     const typeOptions = [
-        { value: "email", label: "Email" },
+        { value: "smtp", label: "SMTP" },
         { value: "slack", label: "Slack" },
         { value: "sms", label: "SMS" },
         { value: "webhook", label: "Webhook" },
@@ -275,7 +275,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
 
                     {watch("type") != "slack" && (
                         <Controller
-                            name="configuration.credential"
+                            name="configuration.credentialId"
                             control={control}
                             render={({ field }) => (
                                 <div className="space-y-2">
@@ -306,7 +306,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                         />
                     )}
 
-                    {watch("type") == "email" && (
+                    {watch("type") == "smtp" && (
                         <Controller
                             name="configuration.fromEmail"
                             control={control}
@@ -325,7 +325,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                         />
                     )}
 
-                    {watch("type") == "email" && (
+                    {watch("type") == "smtp" && (
                         <Controller
                             name="configuration.toEmail"
                             control={control}
@@ -345,7 +345,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                     )}
 
                     {/* Subject (for email) */}
-                    {watch("type") == "email" && (
+                    {watch("type") == "smtp" && (
                         <Controller
                             name="configuration.subject"
                             control={control}
@@ -383,7 +383,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                         />
                     )}
                     {/* Message */}
-                    {watch("type") == "email" && (
+                    {watch("type") == "smtp" && (
                         <Controller
                             name="configuration.body"
                             control={control}
@@ -453,7 +453,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                                     }}
                                     keyPlaceholder="Name"
                                     valuePlaceholder={
-                                        watch("type") === "email"
+                                        watch("type") === "smtp"
                                             ? "email@example.com"
                                             : watch("type") === "slack"
                                             ? "@username or #channel"

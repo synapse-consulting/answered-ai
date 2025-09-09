@@ -69,9 +69,9 @@ const SlackConfigSchema = z.object({
 });
 
 const EmailConfigSchema = z.object({
-  type: z.literal("email"),
+  type: z.literal("smtp"),
   configuration: z.object({
-    credential: z.string(),
+    credentialId: z.string(),
     recipients: z.array(KeyValuePairSchema).nullable(),
     fromEmail: z.email().min(1,"From Email is required"),
     toEmail: z.email().min(1,"To Email is required"),
@@ -84,7 +84,7 @@ const EmailConfigSchema = z.object({
 const WebhookConfigSchema = z.object({
   type: z.literal("webhook"),
   configuration: z.object({
-    credential: z.string(),
+    credentialId: z.string(),
     webhookUrl: z.string().url().optional().nullable(),
     message: z.string().min(1, "Message is required"),
   }),
@@ -93,7 +93,7 @@ const WebhookConfigSchema = z.object({
 const SmsConfigSchema = z.object({
   type: z.literal("sms"),
   configuration: z.object({
-    credential: z.string(),
+    credentialId: z.string(),
     recipients: z.array(KeyValuePairSchema).min(1, "At least one recipient required"),
     message: z.string().min(1, "Message is required"),
   }),
