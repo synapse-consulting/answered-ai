@@ -13,6 +13,7 @@ import { SuggestiveInput } from "@/react/components/ui/SuggestiveInput";
 import { getNodeSuggestions } from "../../utils/jsonTraverser";
 import useSuggestionData from "../hooks/useSuggestionData";
 import { DatePicker } from "@/react/components/ui/DatePicker";
+import { CheckboxField } from "@/react/components/ui/CheckboxField";
 
 interface ConditionModalProps {
     isOpen: boolean;
@@ -39,7 +40,9 @@ interface ConditionModalProps {
 // };
 
 const defaultValues: ScheduelConfig = {
+    dateTime: new Date().toISOString(),
     interval: "seconds",
+    isRecuring: false,
     secondsBetween: "",
 };
 
@@ -104,41 +107,53 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
             case "seconds":
                 return {
                     interval,
+                    isRecuring: data.isRecuring,
+                    dateTime: data.dateTime,
                     secondsBetween: data.secondsBetween,
                 };
             case "minutes":
                 return {
                     interval,
+                    isRecuring: data.isRecuring,
+                    dateTime: data.dateTime,
                     minutesBetween: data.minutesBetween,
                 };
             case "hours":
                 return {
                     interval,
+                    isRecuring: data.isRecuring,
+                    dateTime: data.dateTime,
                     hoursBetween: data.hoursBetween,
-                    triggerAtMinute: data.triggerAtMinute,
+                    // triggerAtMinute: data.triggerAtMinute,
                 };
             case "days":
                 return {
                     interval,
+                    isRecuring: data.isRecuring,
+                    dateTime: data.dateTime,
                     daysBetween: data.daysBetween,
-                    triggerAtHour: data.triggerAtHour,
-                    triggerAtMinute: data.triggerAtMinute,
+                    // triggerAtHour: data.triggerAtHour,
+                    // triggerAtMinute: data.triggerAtMinute,
                 };
             case "weeks":
                 return {
                     interval,
+                    isRecuring: data.isRecuring,
+                    dateTime: data.dateTime,
                     weeksBetween: data.weeksBetween,
-                    triggerAtDay: data.triggerAtDay,
-                    triggerAtHour: data.triggerAtHour,
-                    triggerAtMinute: data.triggerAtMinute,
+                    // triggerAtDay: data.triggerAtDay,
+                    // triggerAtHour: data.triggerAtHour,
+                    // triggerAtMinute: data.triggerAtMinute,
                 };
             case "months":
                 return {
                     interval,
+                    isRecuring: data.isRecuring,
+                    dateTime: data.dateTime,
                     monthsBetween: data.monthsBetween,
-                    triggerAtDate: data.triggerAtDate,
-                    triggerAtHour: data.triggerAtHour,
-                    triggerAtMinute: data.triggerAtMinute,
+                    // triggerAtDate: data.triggerAtDate,
+                    // triggerAtHour: data.triggerAtHour,
+                    // triggerAtMinute: data.triggerAtMinute,
                 };
             default:
                 return {
@@ -153,7 +168,6 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
                 config: cleanConfig(data),
                 isConfigured: true,
             });
-            console.log(cleanConfig(data));
             onClose();
         }
     };
@@ -172,7 +186,11 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
         >
             <form onSubmit={handleSubmit(handleSave, onError)}>
                 <div className="space-y-4">
-                    <DatePicker />
+                    <Controller
+                        name="dateTime"
+                        control={control}
+                        render={({ field }) => <DatePicker field={field} />}
+                    />
                     <Controller
                         control={control}
                         name="interval"
@@ -368,6 +386,18 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
                             )}
                         />
                     )} */}
+                    <Controller
+                        name="isRecuring"
+                        control={control}
+                        render={({ field }) => (
+                            <CheckboxField
+                                label="Is Recuring"
+                                checked={field.value ?? false}
+                                onChange={field.onChange}
+                                description="Check the box if you want Recuring"
+                            />
+                        )}
+                    />
 
                     <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <button

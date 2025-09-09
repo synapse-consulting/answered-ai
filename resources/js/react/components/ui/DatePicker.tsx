@@ -10,10 +10,35 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
+import { ControllerRenderProps } from "react-hook-form";
 
-export function DatePicker() {
+interface DatePickerProps {
+    field: ControllerRenderProps<any, any>; // react-hook-form field
+}
+
+export function DatePicker({ field }: DatePickerProps) {
     const [open, setOpen] = React.useState(false);
-    const [date, setDate] = React.useState<Date | undefined>(undefined);
+    // const [date, setDate] = React.useState<Date | undefined>(undefined);
+    const [date, setDate] = React.useState<Date | undefined>(
+        field.value ? new Date(field.value) : undefined
+    );
+
+    const [time, setTime] = React.useState(
+        field.value
+            ? new Date(field.value).toTimeString().slice(0, 8)
+            : "10:30:00" // fallback
+    );
+
+    React.useEffect(() => {
+        if (date && time) {
+            const [hours, minutes, seconds] = time.split(":").map(Number);
+            if (!isNaN(hours) && !isNaN(minutes) && !isNaN(seconds)) {
+                const updated = new Date(date);
+                updated.setHours(hours, minutes, seconds);
+                field.onChange(updated.toISOString()); // save ISO string
+            }
+        }
+    }, [date, time]);
 
     return (
         <div className="grid grid-cols-2 gap-4">
@@ -41,8 +66,8 @@ export function DatePicker() {
                             mode="single"
                             selected={date}
                             captionLayout="dropdown"
-                            onSelect={(date) => {
-                                setDate(date);
+                            onSelect={(d) => {
+                                setDate(d || undefined);
                                 setOpen(false);
                             }}
                         />
@@ -57,7 +82,8 @@ export function DatePicker() {
                     type="time"
                     id="time-picker"
                     step="1"
-                    defaultValue="10:30:00"
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
                     className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
                 />
             </div>

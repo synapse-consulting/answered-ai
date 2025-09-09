@@ -38,7 +38,7 @@ const defaultValues: NotificationConfig = {
         fromEmail: "",
         toEmail: "",
         subject: "",
-        message: "",
+        body: "",
         template: "",
     },
 };
@@ -103,7 +103,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                         fromEmail: configuration.fromEmail,
                         toEmail: configuration.toEmail,
                         subject: configuration.subject,
-                        message: configuration.message,
+                        body: configuration.body,
                         template: configuration.template || undefined,
                     },
                 };
@@ -383,22 +383,42 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                         />
                     )}
                     {/* Message */}
-                    <Controller
-                        name="configuration.message"
-                        control={control}
-                        render={({ field, fieldState }) => (
-                            <SuggestiveTextarea
-                                label="Message"
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="Enter your notification message..."
-                                required
-                                rows={5}
-                                error={fieldState.error?.message}
-                                suggestions={nodessugg}
-                            />
-                        )}
-                    />
+                    {watch("type") == "email" && (
+                        <Controller
+                            name="configuration.body"
+                            control={control}
+                            render={({ field, fieldState }) => (
+                                <SuggestiveTextarea
+                                    label="Body"
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    placeholder="Enter your email body..."
+                                    required
+                                    rows={5}
+                                    error={fieldState.error?.message}
+                                    suggestions={nodessugg}
+                                />
+                            )}
+                        />
+                    )}
+                    {watch("type") == "slack" && (
+                        <Controller
+                            name="configuration.message"
+                            control={control}
+                            render={({ field, fieldState }) => (
+                                <SuggestiveTextarea
+                                    label="Message"
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    placeholder="Enter your notification message..."
+                                    required
+                                    rows={5}
+                                    error={fieldState.error?.message}
+                                    suggestions={nodessugg}
+                                />
+                            )}
+                        />
+                    )}
 
                     {watch("type") != "slack" && (
                         <Controller
