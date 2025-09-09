@@ -14,7 +14,7 @@ import { useReactFlow } from "@xyflow/react";
 import { SuggestiveInput } from "@/react/components/ui/SuggestiveInput";
 import { getNodeSuggestions } from "../../utils/jsonTraverser";
 import useSuggestionData from "../hooks/useSuggestionData";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, FieldError } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CredentialsModal } from "./CredentialsModal";
 import { SuggestiveTextarea } from "@/react/components/ui/SuggestiveTextarea";
@@ -31,14 +31,16 @@ type SelectOption = {
 };
 
 const defaultValues: NotificationConfig = {
-    credential: "",
     type: "email",
-    recipients: [],
-    fromEmail: "",
-    toEmail: "",
-    subject: "",
-    message: "",
-    template: "",
+    configuration: {
+        credential: "",
+        recipients: [],
+        fromEmail: "",
+        toEmail: "",
+        subject: "",
+        message: "",
+        template: "",
+    },
 };
 
 export const NotificationModal: React.FC<NotificationModalProps> = ({
@@ -59,7 +61,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
     const {
         control,
         handleSubmit,
-        formState: { errors, isValid },
+        // formState: { errors, isValid },
         reset,
         watch,
     } = useForm<NotificationConfig>({
@@ -77,16 +79,77 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             .querySelector('meta[name="app-url"]')
             ?.getAttribute("content") || "";
 
+    const cleanConfig = (
+        data: NotificationConfig
+    ): Partial<NotificationConfig> => {
+        const { type, configuration } = data;
+
+        switch (type) {
+            case "slack":
+                return {
+                    type,
+                    configuration: {
+                        webhookUrl: configuration.webhookUrl,
+                        message: configuration.message,
+                    },
+                };
+
+            case "email":
+                return {
+                    type,
+                    configuration: {
+                        credential: configuration.credential,
+                        recipients: configuration.recipients,
+                        fromEmail: configuration.fromEmail,
+                        toEmail: configuration.toEmail,
+                        subject: configuration.subject,
+                        message: configuration.message,
+                        template: configuration.template || undefined,
+                    },
+                };
+
+            case "webhook":
+                return {
+                    type,
+                    configuration: {
+                        credential: configuration.credential,
+                        webhookUrl: configuration.webhookUrl || undefined,
+                        message: configuration.message,
+                    },
+                };
+
+            case "sms":
+                return {
+                    type,
+                    configuration: {
+                        credential: configuration.credential,
+                        recipients: configuration.recipients,
+                        message: configuration.message,
+                    },
+                };
+
+            default:
+                return {
+                    type,
+                    // configuration: {
+                    // credential: configuration.credential,
+                    // message: configuration.message,
+                    // },
+                };
+        }
+    };
+
     const handleSave = (data: NotificationConfig) => {
         if (nodeId) {
             updateNodeData(nodeId, (currentData) => ({
                 ...currentData,
-                config: data,
+                config: cleanConfig(data),
                 isConfigured: true,
             }));
             onClose();
         }
     };
+
     useEffect(() => {
         const getCredentials = async () => {
             const url = new URL(window.location.href);
@@ -151,8 +214,10 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
 
     const { allResults } = useSuggestionData();
     const nodessugg = getNodeSuggestions(allResults);
-    console.log(watch("credential"));
 
+    const onError = (errors: any) => {
+        console.log("❌ Validation errors:", errors);
+    };
     return (
         <DialogContainer
             isOpen={isOpen}
@@ -165,52 +230,32 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                 isOpen={showCredentialsModal}
                 onClose={() => setShowCredentialsModal(false)}
             />
-            <form onSubmit={handleSubmit(handleSave)}>
+            <form onSubmit={handleSubmit(handleSave, onError)}>
                 <div className="space-y-6">
                     {/* Validation Errors */}
-                    {Object.keys(errors).length > 0 && (
+                    {/* {Object.keys(errors).length > 0 && (
                         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
                             <h4 className="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
                                 Please fix the following errors:
                             </h4>
                             <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
-                                {Object.entries(errors).map(([key, err]) => (
-                                    <li key={key}>• {err.message}</li>
-                                ))}
+                                {Object.entries(errors).map(([key, err]) => {
+                                    if (
+                                        err &&
+                                        typeof err === "object" &&
+                                        "message" in err
+                                    ) {
+                                        return (
+                                            <li key={key}>
+                                                • {(err as FieldError).message}
+                                            </li>
+                                        );
+                                    }
+                                    return null;
+                                })}
                             </ul>
                         </div>
-                    )}
-
-                    <Controller
-                        name="credential"
-                        control={control}
-                        render={({ field }) => (
-                            <div className="space-y-2">
-                                <SelectField
-                                    placeholder="Select A Credential"
-                                    label="Add Credentials"
-                                    // value={
-                                    //     field.value ? String(field.value) : ""
-                                    // }
-                                    value={field.value}
-                                    // onChange={(val) => field.onChange(val)}
-                                    onChange={field.onChange}
-                                    // onChange={field.onChange}
-                                    options={credentialsOptions}
-                                    required
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        setShowCredentialsModal(true)
-                                    }
-                                    className="text-sm text-blue-600 hover:underline"
-                                >
-                                    + Add New Credential
-                                </button>
-                            </div>
-                        )}
-                    />
+                    )} */}
 
                     {/* Notification Type */}
 
@@ -228,11 +273,44 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                         )}
                     />
 
-                    {watch("type") == "email" && (
+                    {watch("type") != "slack" && (
                         <Controller
-                            name="fromEmail"
+                            name="configuration.credential"
                             control={control}
                             render={({ field }) => (
+                                <div className="space-y-2">
+                                    <SelectField
+                                        placeholder="Select A Credential"
+                                        label="Add Credentials"
+                                        // value={
+                                        //     field.value ? String(field.value) : ""
+                                        // }
+                                        value={field.value || ""}
+                                        // onChange={(val) => field.onChange(val)}
+                                        onChange={field.onChange}
+                                        // onChange={field.onChange}
+                                        options={credentialsOptions}
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setShowCredentialsModal(true)
+                                        }
+                                        className="text-sm text-blue-600 hover:underline"
+                                    >
+                                        + Add New Credential
+                                    </button>
+                                </div>
+                            )}
+                        />
+                    )}
+
+                    {watch("type") == "email" && (
+                        <Controller
+                            name="configuration.fromEmail"
+                            control={control}
+                            render={({ field, fieldState }) => (
                                 <SuggestiveInput
                                     label="Email From"
                                     value={field.value || ""}
@@ -240,7 +318,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                                     type="text"
                                     placeholder="Enter email"
                                     required
-                                    // error="adsfa"
+                                    error={fieldState.error?.message}
                                     suggestions={nodessugg}
                                 />
                             )}
@@ -249,9 +327,9 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
 
                     {watch("type") == "email" && (
                         <Controller
-                            name="toEmail"
+                            name="configuration.toEmail"
                             control={control}
-                            render={({ field }) => (
+                            render={({ field, fieldState }) => (
                                 <SuggestiveInput
                                     label="Email Send To"
                                     value={field.value || ""}
@@ -259,7 +337,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                                     type="text"
                                     placeholder="Enter email"
                                     required
-                                    // error="adsfa"
+                                    error={fieldState.error?.message}
                                     suggestions={nodessugg}
                                 />
                             )}
@@ -269,9 +347,9 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                     {/* Subject (for email) */}
                     {watch("type") == "email" && (
                         <Controller
-                            name="subject"
+                            name="configuration.subject"
                             control={control}
-                            render={({ field }) => (
+                            render={({ field, fieldState }) => (
                                 <SuggestiveInput
                                     label="Subject"
                                     value={field.value || ""}
@@ -279,18 +357,36 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                                     type="text"
                                     placeholder="Enter email subject"
                                     required
-                                    // error="adsfa"
+                                    error={fieldState.error?.message}
                                     suggestions={nodessugg}
                                 />
                             )}
                         />
                     )}
 
+                    {watch("type") == "slack" && (
+                        <Controller
+                            name="configuration.webhookUrl"
+                            control={control}
+                            render={({ field, fieldState }) => (
+                                <SuggestiveInput
+                                    label="Webhook Url"
+                                    value={field.value || ""}
+                                    onChange={field.onChange}
+                                    type="text"
+                                    placeholder="Enter Webhook Url"
+                                    required
+                                    error={fieldState.error?.message}
+                                    suggestions={nodessugg}
+                                />
+                            )}
+                        />
+                    )}
                     {/* Message */}
                     <Controller
-                        name="message"
+                        name="configuration.message"
                         control={control}
-                        render={({ field }) => (
+                        render={({ field, fieldState }) => (
                             <SuggestiveTextarea
                                 label="Message"
                                 value={field.value}
@@ -298,92 +394,98 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                                 placeholder="Enter your notification message..."
                                 required
                                 rows={5}
+                                error={fieldState.error?.message}
                                 suggestions={nodessugg}
                             />
                         )}
                     />
 
-                    <Controller
-                        name="recipients"
-                        control={control}
-                        render={({ field }) => (
-                            <KeyValueEditor
-                                label="Recipients"
-                                items={field.value}
-                                onAdd={() =>
-                                    field.onChange([
-                                        ...field.value,
-                                        { key: "", value: "" },
-                                    ])
-                                }
-                                onUpdate={(index, key, value) => {
-                                    const updated = [...field.value];
-                                    updated[index] = {
-                                        ...updated[index],
-                                        [key]: value,
-                                    };
-                                    field.onChange(updated);
-                                }}
-                                onRemove={(index) => {
-                                    field.onChange(
-                                        field.value.filter(
-                                            (_, i) => i !== index
-                                        )
-                                    );
-                                }}
-                                keyPlaceholder="Name"
-                                valuePlaceholder={
-                                    watch("type") === "email"
-                                        ? "email@example.com"
-                                        : watch("type") === "slack"
-                                        ? "@username or #channel"
-                                        : "Recipient"
-                                }
-                            />
-                        )}
-                    />
+                    {watch("type") != "slack" && (
+                        <Controller
+                            name="configuration.recipients"
+                            control={control}
+                            render={({ field }) => (
+                                <KeyValueEditor
+                                    label="Recipients"
+                                    items={field.value ?? []}
+                                    onAdd={() =>
+                                        field.onChange([
+                                            ...(field.value ?? []),
+                                            { key: "", value: "" },
+                                        ])
+                                    }
+                                    onUpdate={(index, key, value) => {
+                                        const updated = [
+                                            ...(field.value ?? []),
+                                        ];
+                                        updated[index] = {
+                                            ...updated[index],
+                                            [key]: value,
+                                        };
+                                        field.onChange(updated);
+                                    }}
+                                    onRemove={(index) => {
+                                        field.onChange(
+                                            (field.value ?? []).filter(
+                                                (_, i) => i !== index
+                                            )
+                                        );
+                                    }}
+                                    keyPlaceholder="Name"
+                                    valuePlaceholder={
+                                        watch("type") === "email"
+                                            ? "email@example.com"
+                                            : watch("type") === "slack"
+                                            ? "@username or #channel"
+                                            : "Recipient"
+                                    }
+                                />
+                            )}
+                        />
+                    )}
 
                     {/* Template Options */}
-                    <div className="space-y-4">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Template Options
-                        </h4>
-                        <div className="space-y-3">
-                            <Controller
-                                name="template"
-                                control={control}
-                                render={({ field }) => (
-                                    <CheckboxField
-                                        label="Use custom template"
-                                        checked={!!field.value}
-                                        onChange={(checked) =>
-                                            field.onChange(
-                                                checked ? "custom" : ""
-                                            )
-                                        }
-                                        description="Enable to use a custom message template"
-                                    />
-                                )}
-                            />
-
-                            {/* {config.template && ( */}
-                            {watch("template") && (
+                    {watch("type") != "slack" && (
+                        <div className="space-y-4">
+                            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Template Options
+                            </h4>
+                            <div className="space-y-3">
                                 <Controller
-                                    name="template"
+                                    name="configuration.template"
                                     control={control}
                                     render={({ field }) => (
-                                        <FormField
-                                            label="Template ID"
-                                            value={field.value || ""}
-                                            onChange={field.onChange}
-                                            placeholder="Enter template ID"
+                                        <CheckboxField
+                                            label="Use custom template"
+                                            checked={!!field.value}
+                                            onChange={(checked) =>
+                                                field.onChange(
+                                                    checked ? "custom" : ""
+                                                )
+                                            }
+                                            description="Enable to use a custom message template"
                                         />
                                     )}
                                 />
-                            )}
-                        </div>
-                    </div>
 
+                                {/* {config.template && ( */}
+                                {watch("configuration.template") && (
+                                    <Controller
+                                        name="configuration.template"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <FormField
+                                                label="Template ID"
+                                                value={field.value || ""}
+                                                onChange={field.onChange}
+                                                placeholder="Enter template ID"
+                                            />
+                                        )}
+                                    />
+                                )}
+                            </div>
+                        </div>
+                    )}
                     {/* Action Buttons */}
                     <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <button
@@ -399,16 +501,12 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                         </button>
                         <button
                             type="submit"
-                            // onClick={handleSave}
-                            // disabled={!isValid}
                             className={`px-4 py-2 text-sm font-medium text-white rounded-lg shadow-sm 
               focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 
               transition-all duration-200
-               ${
-                   isValid
-                       ? "bg-blue-500 hover:bg-blue-600 transform hover:-translate-y-0.5"
-                       : "bg-gray-400 cursor-not-allowed"
-               }`}
+                bg-blue-500 hover:bg-blue-600 transform hover:-translate-y-0.5
+                       
+               `}
                         >
                             Save Configuration
                         </button>
