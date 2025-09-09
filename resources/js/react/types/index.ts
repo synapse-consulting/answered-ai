@@ -43,19 +43,68 @@ export interface NodeType extends Node<BaseNodeData<RecordUnknown>, NodeTypes> {
 //   autoRetry?: boolean;
 // }
 
-export const NotificationConfigSchema = z.object({
-  credential: z.string().min(1, "Credentials are required"),
-  type: z.enum(['email', 'slack', 'sms', 'webhook']),
-  recipients: z.array(KeyValuePairSchema),
-  fromEmail: z.email().optional().nullable(),
-  toEmail: z.email().optional().nullable(),
-  subject: z.string().optional().nullable(),
-  message: z.string().min(1, "Message is required"),
-  template: z.string().optional().nullable(),
-  // enableLogging: z.boolean().optional().nullable(),
-  // autoRetry: z.boolean().optional().nullable()
-})
+// export const NotificationConfigSchema = z.object({
+//   type: z.enum(['email', 'slack', 'sms', 'webhook']),
+//   configuration: z.object({
+//     credential: z.string().optional(),
+//     recipients: z.array(KeyValuePairSchema).optional(),
+//     fromEmail: z.email().optional().nullable(),
+//     webhookUrl: z.url().optional().nullable(),
+//     toEmail: z.email().optional().nullable(),
+//     subject: z.string().optional().nullable(),
+//     message: z.string().min(1, "Message is required"),
+//     template: z.string().optional().nullable(),
+//   })
+//   // enableLogging: z.boolean().optional().nullable(),
+//   // autoRetry: z.boolean().optional().nullable()
+// })
 
+
+const SlackConfigSchema = z.object({
+  type: z.literal("slack"),
+  configuration: z.object({
+    webhookUrl: z.string().url(),
+    message: z.string().min(1, "Message is required"),
+  }),
+});
+
+const EmailConfigSchema = z.object({
+  type: z.literal("email"),
+  configuration: z.object({
+    credential: z.string(),
+    recipients: z.array(KeyValuePairSchema).min(1, "At least one recipient required"),
+    fromEmail: z.email().min(1,"From Email is required"),
+    toEmail: z.email().min(1,"To Email is required"),
+    subject: z.string().optional().nullable(),
+    message: z.string().min(1, "Message is required"),
+    template: z.string().optional().nullable(),
+  }),
+});
+
+const WebhookConfigSchema = z.object({
+  type: z.literal("webhook"),
+  configuration: z.object({
+    credential: z.string(),
+    webhookUrl: z.string().url().optional().nullable(),
+    message: z.string().min(1, "Message is required"),
+  }),
+});
+
+const SmsConfigSchema = z.object({
+  type: z.literal("sms"),
+  configuration: z.object({
+    credential: z.string(),
+    recipients: z.array(KeyValuePairSchema).min(1, "At least one recipient required"),
+    message: z.string().min(1, "Message is required"),
+  }),
+});
+
+export const NotificationConfigSchema = z.discriminatedUnion("type", [
+  SlackConfigSchema,
+  EmailConfigSchema,
+  WebhookConfigSchema,
+  SmsConfigSchema,
+]);
 export type NotificationConfig = z.infer<typeof NotificationConfigSchema>
 
 export const CredentialConfigSchema = z.object({
@@ -103,15 +152,81 @@ export const conditionConfigSchema = z.object({
 export type ConditionConfig = z.infer<typeof conditionConfigSchema>;
 
 
-export const ScheduelConfigSchema = z.object({
-  interval: z.enum(['seconds', 'minutes', 'hours', 'days', 'months']),
-  cronExpression: z.string().min(1, "Cron expression is required"),
-  timezone: z.string().min(1, "Timezone is required"),
-  enableLogging: z.boolean().optional(),
-  autoRetry: z.boolean().optional()
-})
+// export const ScheduelConfigSchema = z.object({
+//   interval: z.enum(['seconds', 'minutes', 'hours', 'days', 'weeks', 'months']),
+//   secondsBetween: z.string(),
+//   minutesBetween: z.string(),
+//   hoursBetween: z.string(),
+//   daysBetween: z.string(),
+//   weeksBetween: z.string(),
+//   monthsBetween: z.string(),
+//   triggerAtHour: z.enum(['1am', '2am', '3am', '4am', '5am', '6am', '7am', '8am', '9am']),
+//   triggerAtMinute: z.string(),
+//   triggerAtDay: z.enum(['monday', 'tuesday', 'wedneday', 'thursday', 'friday', 'saturday', 'sunday']),
+//   triggerAtDate: z.string()
+//   // cronExpression: z.string().min(1, "Cron expression is required"),
+//   // timezone: z.string().min(1, "Timezone is required"),
+// })
+
+export const ScheduelConfigSchema = z.discriminatedUnion("interval", [
+  // SECONDS
+  z.object({
+    interval: z.literal("seconds"),
+    secondsBetween: z.string().min(1, "Seconds are required"),
+  }),
+
+  // MINUTES
+  z.object({
+    interval: z.literal("minutes"),
+    minutesBetween: z.string().min(1, "Minutes are required"),
+  }),
+
+  // HOURS
+  z.object({
+    interval: z.literal("hours"),
+    hoursBetween: z.string().min(1, "Hours are required"),
+    triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
+  }),
+
+  // DAYS
+  z.object({
+    interval: z.literal("days"),
+    daysBetween: z.string().min(1, "Days are required"),
+    triggerAtHour: z.enum([
+      "1am","2am","3am","4am","5am","6am","7am","8am","9am"
+    ]),
+    triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
+  }),
+
+  // WEEKS
+  z.object({
+    interval: z.literal("weeks"),
+    weeksBetween: z.string().min(1, "Weeks are required"),
+    triggerAtDay: z.enum([
+      "monday","tuesday","wedneday","thursday","friday","saturday","sunday"
+    ]),
+    triggerAtHour: z.enum([
+      "1am","2am","3am","4am","5am","6am","7am","8am","9am"
+    ]),
+    triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
+  }),
+
+  // MONTHS
+  z.object({
+    interval: z.literal("months"),
+    monthsBetween: z.string().min(1, "Months are required"),
+    triggerAtDate: z.string().min(1, "Date is required"),
+    triggerAtHour: z.enum([
+      "1am","2am","3am","4am","5am","6am","7am","8am","9am"
+    ]),
+    triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
+  }),
+]);
+
 
 export type ScheduelConfig = z.infer<typeof ScheduelConfigSchema>
+
+export interface ScheduelNodeData extends BaseNodeData<ScheduelConfig> {}
 
 export interface NotificationNodeData extends BaseNodeData<NotificationConfig> {}
 

@@ -7,6 +7,8 @@ import { createNodeStructured } from "../utils/node-utils";
 // import { json } from "zod";
 import { toast } from "sonner";
 import { X } from "lucide-react";
+import { useUpdateWorkflow, useWorkflow } from "../hooks/useWorkFlow";
+
 interface Props {}
 
 const Sidebar = () => {
@@ -17,53 +19,64 @@ const Sidebar = () => {
     const nodes = useNodes<NodeType>();
 
     let nodeIdCounter = Date.now();
+
+    // Get id from url parameter
+    const url = new URL(window.location.href);
+    const id = url.searchParams.get("id") || "";
+
+    const { data } = useWorkflow(id);
+    const updateWorkflow = useUpdateWorkflow(id);
+
     const onSave = async () => {
         setLoading(true);
         // Create Node Structure
         const structuredNodes = createNodeStructured(nodes, getEdges());
         console.log("🍪 SIDEBAR.TSX ==> onSave", structuredNodes);
 
-        const baseUrl =
-            document
-                .querySelector('meta[name="app-url"]')
-                ?.getAttribute("content") || "";
+        const name = data?.Workflow.name || "Untitled Workflow";
+        const description = data?.Workflow.description || "";
 
-        const url = new URL(window.location.href);
-        const id = url.searchParams.get("id");
-        try {
-            const data = await fetch(`${baseUrl}/api/workflow/${id}`).then(
-                (res) => res.json()
-            );
-            var description = data.Workflow.description;
-            var name = data.Workflow.name;
-        } catch (error) {
-            console.log("Untitled Workflow");
-        }
-
-        // Saving the workflow
-        try {
-            const response = await fetch(`${baseUrl}/api/workflow/${id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
+        updateWorkflow.mutate(
+            {
+                name,
+                description,
+                executable_flow: structuredNodes,
+            },
+            {
+                onSuccess: () => {
+                    toast.success("Workflow Saved Succefully");
+                    setLoading(false);
                 },
-                body: JSON.stringify({
-                    name: name || "Untitled Workflow",
-                    description: description || "",
-                    executable_flow: structuredNodes,
-                }),
-            });
-
-            setLoading(false);
-            if (!response.ok) {
-                toast.error(`Failed to save. Status: ${response.status}`);
-            } else {
-                toast.success("Workflow saved successfully!");
+                onError: (error: any) => {
+                    toast.error(`Error saving: ${error.message}`);
+                    setLoading(false);
+                },
             }
-        } catch (error) {
-            console.error("Error saving nodes:", error);
-            toast(`Error saving nodes`);
-        }
+        );
+        // Saving the workflow
+        // try {
+        //     const response = await fetch(`${baseUrl}/api/workflow/${id}`, {
+        //         method: "PUT",
+        //         headers: {
+        //             "Content-Type": "application/json",
+        //         },
+        //         body: JSON.stringify({
+        //             name: name || "Untitled Workflow",
+        //             description: description || "",
+        //             executable_flow: structuredNodes,
+        //         }),
+        //     });
+
+        //     setLoading(false);
+        //     if (!response.ok) {
+        //         toast.error(`Failed to save. Status: ${response.status}`);
+        //     } else {
+        //         toast.success("Workflow saved successfully!");
+        //     }
+        // } catch (error) {
+        //     console.error("Error saving nodes:", error);
+        //     toast(`Error saving nodes`);
+        // }
     };
 
     const handleAddNode = (item: NodeMenuItem) => {
