@@ -19,18 +19,11 @@ export default function ConditionNode<T extends Record<string, unknown>>(
                 id="target"
                 nodeProps={props}
             />
+
             <NodeHandle
                 type="source"
                 position={Position.Right}
-                id="source-true"
-                style={{ top: "30%" }}
-                nodeProps={props}
-            />
-            <NodeHandle
-                type="source"
-                position={Position.Right}
-                id="source-false"
-                style={{ top: "70%" }}
+                id="source2"
                 nodeProps={props}
             />
         </NodeContainer>

@@ -10,8 +10,11 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useReactFlow } from "@xyflow/react";
 import { SuggestiveInput } from "@/react/components/ui/SuggestiveInput";
-import { getNodeSuggestions } from "../../utils/jsonTraverser";
-import useSuggestionData from "../hooks/useSuggestionData";
+import {
+    getNodeNameIdSuggestions,
+    getNodeSuggestions,
+} from "../../utils/jsonTraverser";
+import useSuggestionData, { useNodeData } from "../hooks/useSuggestionData";
 import { DatePicker } from "@/react/components/ui/DatePicker";
 import { CheckboxField } from "@/react/components/ui/CheckboxField";
 
@@ -43,6 +46,7 @@ const defaultValues: ScheduelConfig = {
     dateTime: new Date().toISOString(),
     interval: "seconds",
     isRecuring: false,
+    action: "",
     secondsBetween: "",
 };
 
@@ -97,6 +101,10 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
         }
     }, [initialConfig, isOpen]);
 
+    const { NodesId } = useNodeData(); // For Name and Id of Nodes
+    const updatedNode = NodesId.filter((node) => node.id !== nodeId);
+    const nodeIdName = getNodeNameIdSuggestions(updatedNode);
+
     const { allResults } = useSuggestionData();
     const nodessugg = getNodeSuggestions(allResults);
 
@@ -109,6 +117,7 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
                     interval,
                     isRecuring: data.isRecuring,
                     dateTime: data.dateTime,
+                    action: data.action,
                     secondsBetween: data.secondsBetween,
                 };
             case "minutes":
@@ -116,6 +125,7 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
                     interval,
                     isRecuring: data.isRecuring,
                     dateTime: data.dateTime,
+                    action: data.action,
                     minutesBetween: data.minutesBetween,
                 };
             case "hours":
@@ -123,6 +133,7 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
                     interval,
                     isRecuring: data.isRecuring,
                     dateTime: data.dateTime,
+                    action: data.action,
                     hoursBetween: data.hoursBetween,
                     // triggerAtMinute: data.triggerAtMinute,
                 };
@@ -131,6 +142,7 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
                     interval,
                     isRecuring: data.isRecuring,
                     dateTime: data.dateTime,
+                    action: data.action,
                     daysBetween: data.daysBetween,
                     // triggerAtHour: data.triggerAtHour,
                     // triggerAtMinute: data.triggerAtMinute,
@@ -140,6 +152,7 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
                     interval,
                     isRecuring: data.isRecuring,
                     dateTime: data.dateTime,
+                    action: data.action,
                     weeksBetween: data.weeksBetween,
                     // triggerAtDay: data.triggerAtDay,
                     // triggerAtHour: data.triggerAtHour,
@@ -150,6 +163,7 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
                     interval,
                     isRecuring: data.isRecuring,
                     dateTime: data.dateTime,
+                    action: data.action,
                     monthsBetween: data.monthsBetween,
                     // triggerAtDate: data.triggerAtDate,
                     // triggerAtHour: data.triggerAtHour,
@@ -347,6 +361,21 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
                             )}
                         />
                     )}
+
+                    <Controller
+                        name="action"
+                        control={control}
+                        render={({ field, fieldState }) => (
+                            <SelectField
+                                label="Action"
+                                placeholder="Please select node"
+                                value={field.value}
+                                onChange={field.onChange}
+                                options={nodeIdName}
+                                // error={fieldState.error}
+                            />
+                        )}
+                    />
 
                     {/* {["days", "weeks", "months"].includes(
                         watch("interval")

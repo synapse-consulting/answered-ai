@@ -172,6 +172,7 @@ export const ScheduelConfigSchema = z.discriminatedUnion("interval", [
   // SECONDS
   z.object({
     interval: z.literal("seconds"),
+    action: z.string().min(1, "Action is required"),
     dateTime: z.string(),
     isRecuring: z.boolean(),
     secondsBetween: z.string().min(1, "Seconds are required"),
@@ -182,6 +183,7 @@ export const ScheduelConfigSchema = z.discriminatedUnion("interval", [
     interval: z.literal("minutes"),
     isRecuring: z.boolean(),
     dateTime: z.string(),
+    action: z.string().min(1, "Action is required"),
     minutesBetween: z.string().min(1, "Minutes are required"),
   }),
 
@@ -191,6 +193,7 @@ export const ScheduelConfigSchema = z.discriminatedUnion("interval", [
     dateTime: z.string(),
     isRecuring: z.boolean(),
 
+    action: z.string().min(1, "Action is required"),
     hoursBetween: z.string().min(1, "Hours are required"),
     // triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
   }),
@@ -201,6 +204,7 @@ export const ScheduelConfigSchema = z.discriminatedUnion("interval", [
     dateTime: z.string(),
     isRecuring: z.boolean(),
 
+    action: z.string().min(1, "Action is required"),
     daysBetween: z.string().min(1, "Days are required"),
     // triggerAtHour: z.enum([
     //   "1am","2am","3am","4am","5am","6am","7am","8am","9am"
@@ -213,7 +217,7 @@ export const ScheduelConfigSchema = z.discriminatedUnion("interval", [
     interval: z.literal("weeks"),
     dateTime: z.string(),
     isRecuring: z.boolean(),
-
+    action: z.string().min(1, "Action is required"),
     weeksBetween: z.string().min(1, "Weeks are required"),
     // triggerAtDay: z.enum([
     //   "monday","tuesday","wedneday","thursday","friday","saturday","sunday"
@@ -229,7 +233,7 @@ export const ScheduelConfigSchema = z.discriminatedUnion("interval", [
     interval: z.literal("months"),
     dateTime: z.string(),
     isRecuring: z.boolean(),
-
+    action: z.string().min(1, "Action is required"),
     monthsBetween: z.string().min(1, "Months are required"),
     // triggerAtDate: z.string().min(1, "Date is required"),
     // triggerAtHour: z.enum([
