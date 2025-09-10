@@ -138,3 +138,13 @@ export const getNodeSuggestions = (
 
   return suggestions
 };
+
+
+export const getNodeNameIdSuggestions = (
+  sourceNodes: { id: string; name: any;}[]
+): Suggestion[] => {
+  return sourceNodes.map((node) => ({
+    label: node.name ?? "Untitled",
+    value: node.id, // ✅ use id as value
+  }));
+};

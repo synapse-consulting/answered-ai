@@ -14,7 +14,7 @@ import { useReactFlow } from "@xyflow/react";
 import { SuggestiveInput } from "@/react/components/ui/SuggestiveInput";
 import { getNodeSuggestions } from "../../utils/jsonTraverser";
 import useSuggestionData from "../hooks/useSuggestionData";
-import { useForm, Controller, FieldError } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CredentialsModal } from "./CredentialsModal";
 import { SuggestiveTextarea } from "@/react/components/ui/SuggestiveTextarea";
@@ -192,9 +192,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                             label: cred.name,
                         })
                     );
-                    console.log(JSON.stringify(options), "options");
 
-                    // console.log(options + "options");
                     setCredentialsOptions(options);
                 }
             } catch (error) {
@@ -213,6 +211,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
     ];
 
     const { allResults } = useSuggestionData();
+
     const nodessugg = getNodeSuggestions(allResults);
 
     const onError = (errors: any) => {
