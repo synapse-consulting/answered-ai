@@ -69,14 +69,14 @@ const SlackConfigSchema = z.object({
 });
 
 const EmailConfigSchema = z.object({
-  type: z.literal("email"),
+  type: z.literal("smtp"),
   configuration: z.object({
-    credential: z.string(),
-    recipients: z.array(KeyValuePairSchema).min(1, "At least one recipient required"),
+    credentialId: z.string(),
+    recipients: z.array(KeyValuePairSchema).nullable(),
     fromEmail: z.email().min(1,"From Email is required"),
     toEmail: z.email().min(1,"To Email is required"),
     subject: z.string().optional().nullable(),
-    message: z.string().min(1, "Message is required"),
+    body: z.string().min(1, "Message is required"),
     template: z.string().optional().nullable(),
   }),
 });
@@ -84,7 +84,7 @@ const EmailConfigSchema = z.object({
 const WebhookConfigSchema = z.object({
   type: z.literal("webhook"),
   configuration: z.object({
-    credential: z.string(),
+    credentialId: z.string(),
     webhookUrl: z.string().url().optional().nullable(),
     message: z.string().min(1, "Message is required"),
   }),
@@ -93,7 +93,7 @@ const WebhookConfigSchema = z.object({
 const SmsConfigSchema = z.object({
   type: z.literal("sms"),
   configuration: z.object({
-    credential: z.string(),
+    credentialId: z.string(),
     recipients: z.array(KeyValuePairSchema).min(1, "At least one recipient required"),
     message: z.string().min(1, "Message is required"),
   }),
@@ -172,54 +172,70 @@ export const ScheduelConfigSchema = z.discriminatedUnion("interval", [
   // SECONDS
   z.object({
     interval: z.literal("seconds"),
+    dateTime: z.string(),
+    isRecuring: z.boolean(),
     secondsBetween: z.string().min(1, "Seconds are required"),
   }),
 
   // MINUTES
   z.object({
     interval: z.literal("minutes"),
+    isRecuring: z.boolean(),
+    dateTime: z.string(),
     minutesBetween: z.string().min(1, "Minutes are required"),
   }),
 
   // HOURS
   z.object({
     interval: z.literal("hours"),
+    dateTime: z.string(),
+    isRecuring: z.boolean(),
+
     hoursBetween: z.string().min(1, "Hours are required"),
-    triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
+    // triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
   }),
 
   // DAYS
   z.object({
     interval: z.literal("days"),
+    dateTime: z.string(),
+    isRecuring: z.boolean(),
+
     daysBetween: z.string().min(1, "Days are required"),
-    triggerAtHour: z.enum([
-      "1am","2am","3am","4am","5am","6am","7am","8am","9am"
-    ]),
-    triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
+    // triggerAtHour: z.enum([
+    //   "1am","2am","3am","4am","5am","6am","7am","8am","9am"
+    // ]),
+    // triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
   }),
 
   // WEEKS
   z.object({
     interval: z.literal("weeks"),
+    dateTime: z.string(),
+    isRecuring: z.boolean(),
+
     weeksBetween: z.string().min(1, "Weeks are required"),
-    triggerAtDay: z.enum([
-      "monday","tuesday","wedneday","thursday","friday","saturday","sunday"
-    ]),
-    triggerAtHour: z.enum([
-      "1am","2am","3am","4am","5am","6am","7am","8am","9am"
-    ]),
-    triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
+    // triggerAtDay: z.enum([
+    //   "monday","tuesday","wedneday","thursday","friday","saturday","sunday"
+    // ]),
+    // triggerAtHour: z.enum([
+    //   "1am","2am","3am","4am","5am","6am","7am","8am","9am"
+    // ]),
+    // triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
   }),
 
   // MONTHS
   z.object({
     interval: z.literal("months"),
+    dateTime: z.string(),
+    isRecuring: z.boolean(),
+
     monthsBetween: z.string().min(1, "Months are required"),
-    triggerAtDate: z.string().min(1, "Date is required"),
-    triggerAtHour: z.enum([
-      "1am","2am","3am","4am","5am","6am","7am","8am","9am"
-    ]),
-    triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
+    // triggerAtDate: z.string().min(1, "Date is required"),
+    // triggerAtHour: z.enum([
+    //   "1am","2am","3am","4am","5am","6am","7am","8am","9am"
+    // ]),
+    // triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
   }),
 ]);
 
