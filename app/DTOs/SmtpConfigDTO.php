@@ -35,7 +35,6 @@ class SmtpConfigDTO
             $data['credentialId'],
             $data['fromEmail'],
             $data['toEmail'],
-            
         );
     }
 }

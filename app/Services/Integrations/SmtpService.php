@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Config;
 use App\Services\BaseService; 
 
-class SmtpIntegrationService extends BaseService
+class SmtpService extends BaseService
 {
     public function __construct(protected SmtpConfigDTO $config)
     {
@@ -21,7 +21,7 @@ class SmtpIntegrationService extends BaseService
         Config::set('mail.mailers.custom_mailer', [
             'transport' => 'smtp',
             'host' => $credential->host,
-            'port' => $credential->port,
+            'port' => (int)$credential->port,
             'encryption' => $credential->encryption,
             'username' => $credential->username,
             'password' => $credential->password,
@@ -33,9 +33,6 @@ class SmtpIntegrationService extends BaseService
         ]);
     }
 
-    /**
-     * Send a test email
-     */
     public function sendEmail(): void
     {
         Mail::mailer('custom_mailer')->raw($this->config->body, function ($message) {
