@@ -17,6 +17,8 @@ class IntegrationController extends Controller
     function integrate(IntegrationRequest $request){
         $dto = $request->getDTO();
         $integrationService = app(IntegrationService::class)->execute($request->type, $dto); 
+
+        return response()->success([], 'Integrated successfully.'); 
     }
 
 }
