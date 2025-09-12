@@ -259,8 +259,8 @@ export const HttpRequestModal: React.FC<HttpRequestModalProps> = ({
         { value: "text/plain", label: "Raw" },
     ];
 
-    const { allResults } = useSuggestionData();
-    const nodessugg = getNodeSuggestions(allResults);
+    const { allResults } = useSuggestionData(nodeId ?? "");
+    var nodessugg = getNodeSuggestions(allResults);
 
     // const errors = validateConfig();
 

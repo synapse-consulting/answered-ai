@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 interface Props {
     label: string;
-    value: string;
+    value: string | number;
     onChange: (value: string) => void;
     placeholder?: string;
     type?: "text" | "password" | "email" | "url";

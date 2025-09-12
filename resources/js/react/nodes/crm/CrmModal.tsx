@@ -125,10 +125,8 @@ export const CrmModal: React.FC<CrmModalProps> = ({
     ];
 
     // const errors = validateConfig();
-
-    const { allResults } = useSuggestionData();
-
-    const nodessugg = getNodeSuggestions(allResults);
+    const { allResults } = useSuggestionData(nodeId ?? "");
+    var nodessugg = getNodeSuggestions(allResults);
 
     return (
         <DialogContainer

@@ -10,13 +10,11 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useReactFlow } from "@xyflow/react";
 import { SuggestiveInput } from "@/react/components/ui/SuggestiveInput";
-import {
-    getNodeNameIdSuggestions,
-    getNodeSuggestions,
-} from "../../utils/jsonTraverser";
-import useSuggestionData, { useNodeData } from "../hooks/useSuggestionData";
+import { getNodeSuggestions } from "../../utils/jsonTraverser";
+import useSuggestionData from "../hooks/useSuggestionData";
 import { DatePicker } from "@/react/components/ui/DatePicker";
 import { CheckboxField } from "@/react/components/ui/CheckboxField";
+import { useAllWorkflows } from "@/react/hooks/useWorkFlow";
 
 interface ConditionModalProps {
     isOpen: boolean;
@@ -43,11 +41,11 @@ interface ConditionModalProps {
 // };
 
 const defaultValues: ScheduelConfig = {
-    dateTime: new Date().toISOString(),
     interval: "seconds",
+    initialDate: new Date().toISOString(),
     isRecuring: false,
     action: "",
-    secondsBetween: "",
+    durationBetween: "",
 };
 
 const IntervalOptions = [
@@ -59,26 +57,26 @@ const IntervalOptions = [
     { value: "months", label: "Months" },
 ];
 
-const HoursOptions = [
-    { value: "1am", label: "1am" },
-    { value: "2am", label: "2am" },
-    { value: "3am", label: "3am" },
-    { value: "4am", label: "4am" },
-    { value: "5am", label: "5am" },
-    { value: "6am", label: "6am" },
-    { value: "7am", label: "7am" },
-    { value: "8am", label: "8am" },
-];
+// const HoursOptions = [
+//     { value: "1am", label: "1am" },
+//     { value: "2am", label: "2am" },
+//     { value: "3am", label: "3am" },
+//     { value: "4am", label: "4am" },
+//     { value: "5am", label: "5am" },
+//     { value: "6am", label: "6am" },
+//     { value: "7am", label: "7am" },
+//     { value: "8am", label: "8am" },
+// ];
 
-const DaysOptions = [
-    { value: "monday", label: "Monday" },
-    { value: "tuesday", label: "Tuesday" },
-    { value: "wednesday", label: "Wednesday" },
-    { value: "thursday", label: "Thursday" },
-    { value: "friday", label: "Thursday" },
-    { value: "saturday", label: "Thursday" },
-    { value: "sunday", label: "Thursday" },
-];
+// const DaysOptions = [
+//     { value: "monday", label: "Monday" },
+//     { value: "tuesday", label: "Tuesday" },
+//     { value: "wednesday", label: "Wednesday" },
+//     { value: "thursday", label: "Thursday" },
+//     { value: "friday", label: "Thursday" },
+//     { value: "saturday", label: "Thursday" },
+//     { value: "sunday", label: "Thursday" },
+// ];
 
 export const ScheduelModal: React.FC<ConditionModalProps> = ({
     isOpen,
@@ -90,7 +88,7 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
         | ScheduelNodeData
         | undefined;
 
-    const { control, handleSubmit, watch, reset } = useForm<ScheduelConfig>({
+    const { control, handleSubmit, reset } = useForm<ScheduelConfig>({
         resolver: zodResolver(ScheduelConfigSchema),
         defaultValues: { ...defaultValues, ...initialConfig?.config },
     });
@@ -101,87 +99,95 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
         }
     }, [initialConfig, isOpen]);
 
-    const { NodesId } = useNodeData(); // For Name and Id of Nodes
-    const updatedNode = NodesId.filter((node) => node.id !== nodeId);
-    const nodeIdName = getNodeNameIdSuggestions(updatedNode);
+    // const { NodesId } = useNodeData(); // For Name and Id of Nodes
+    // const updatedNode = NodesId.filter((node) => node.id !== nodeId);
+    // const nodessugg = getNodeNameIdSuggestions(updatedNode);
+    const { allResults } = useSuggestionData(nodeId ?? "");
+    var nodessugg = getNodeSuggestions(allResults);
 
-    const { allResults } = useSuggestionData();
-    const nodessugg = getNodeSuggestions(allResults);
+    const { data } = useAllWorkflows();
 
-    const cleanConfig = (data: ScheduelConfig): Partial<ScheduelConfig> => {
-        const { interval, ...rest } = data;
+    const ActionOptions =
+        data?.map((d) => ({
+            value: String(d.id),
+            label: d.name,
+        })) ?? [];
 
-        switch (interval) {
-            case "seconds":
-                return {
-                    interval,
-                    isRecuring: data.isRecuring,
-                    dateTime: data.dateTime,
-                    action: data.action,
-                    secondsBetween: data.secondsBetween,
-                };
-            case "minutes":
-                return {
-                    interval,
-                    isRecuring: data.isRecuring,
-                    dateTime: data.dateTime,
-                    action: data.action,
-                    minutesBetween: data.minutesBetween,
-                };
-            case "hours":
-                return {
-                    interval,
-                    isRecuring: data.isRecuring,
-                    dateTime: data.dateTime,
-                    action: data.action,
-                    hoursBetween: data.hoursBetween,
-                    // triggerAtMinute: data.triggerAtMinute,
-                };
-            case "days":
-                return {
-                    interval,
-                    isRecuring: data.isRecuring,
-                    dateTime: data.dateTime,
-                    action: data.action,
-                    daysBetween: data.daysBetween,
-                    // triggerAtHour: data.triggerAtHour,
-                    // triggerAtMinute: data.triggerAtMinute,
-                };
-            case "weeks":
-                return {
-                    interval,
-                    isRecuring: data.isRecuring,
-                    dateTime: data.dateTime,
-                    action: data.action,
-                    weeksBetween: data.weeksBetween,
-                    // triggerAtDay: data.triggerAtDay,
-                    // triggerAtHour: data.triggerAtHour,
-                    // triggerAtMinute: data.triggerAtMinute,
-                };
-            case "months":
-                return {
-                    interval,
-                    isRecuring: data.isRecuring,
-                    dateTime: data.dateTime,
-                    action: data.action,
-                    monthsBetween: data.monthsBetween,
-                    // triggerAtDate: data.triggerAtDate,
-                    // triggerAtHour: data.triggerAtHour,
-                    // triggerAtMinute: data.triggerAtMinute,
-                };
-            default:
-                return {
-                    interval,
-                };
-        }
-    };
+    // const cleanConfig = (data: ScheduelConfig): Partial<ScheduelConfig> => {
+    //     const { interval, ...rest } = data;
+
+    //     switch (interval) {
+    //         case "seconds":
+    //             return {
+    //                 interval,
+    //                 isRecuring: data.isRecuring,
+    //                 initialDate: data.initialDate,
+    //                 action: data.action,
+    //                 secondsBetween: data.secondsBetween,
+    //             };
+    //         case "minutes":
+    //             return {
+    //                 interval,
+    //                 isRecuring: data.isRecuring,
+    //                 initialDate: data.initialDate,
+    //                 action: data.action,
+    //                 minutesBetween: data.minutesBetween,
+    //             };
+    //         case "hours":
+    //             return {
+    //                 interval,
+    //                 isRecuring: data.isRecuring,
+    //                 initialDate: data.initialDate,
+    //                 action: data.action,
+    //                 hoursBetween: data.hoursBetween,
+    //                 // triggerAtMinute: data.triggerAtMinute,
+    //             };
+    //         case "days":
+    //             return {
+    //                 interval,
+    //                 isRecuring: data.isRecuring,
+    //                 initialDate: data.initialDate,
+    //                 action: data.action,
+    //                 daysBetween: data.daysBetween,
+    //                 // triggerAtHour: data.triggerAtHour,
+    //                 // triggerAtMinute: data.triggerAtMinute,
+    //             };
+    //         case "weeks":
+    //             return {
+    //                 interval,
+    //                 isRecuring: data.isRecuring,
+    //                 initialDate: data.initialDate,
+    //                 action: data.action,
+    //                 weeksBetween: data.weeksBetween,
+    //                 // triggerAtDay: data.triggerAtDay,
+    //                 // triggerAtHour: data.triggerAtHour,
+    //                 // triggerAtMinute: data.triggerAtMinute,
+    //             };
+    //         case "months":
+    //             return {
+    //                 interval,
+    //                 isRecuring: data.isRecuring,
+    //                 initialDate: data.initialDate,
+    //                 action: data.action,
+    //                 monthsBetween: data.monthsBetween,
+    //                 // triggerAtDate: data.triggerAtDate,
+    //                 // triggerAtHour: data.triggerAtHour,
+    //                 // triggerAtMinute: data.triggerAtMinute,
+    //             };
+    //         default:
+    //             return {
+    //                 interval,
+    //             };
+    //     }
+    // };
 
     const handleSave = (data: ScheduelConfig) => {
         if (nodeId) {
-            updateNodeData(nodeId, {
-                config: cleanConfig(data),
+            updateNodeData(nodeId, (currentData) => ({
+                ...currentData,
+                config: data,
                 isConfigured: true,
-            });
+            }));
             onClose();
         }
     };
@@ -201,7 +207,7 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
             <form onSubmit={handleSubmit(handleSave, onError)}>
                 <div className="space-y-4">
                     <Controller
-                        name="dateTime"
+                        name="initialDate"
                         control={control}
                         render={({ field }) => <DatePicker field={field} />}
                     />
@@ -218,7 +224,7 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
                         )}
                     />
 
-                    {["weeks"].includes(watch("interval")) && (
+                    {/* {["weeks"].includes(watch("interval")) && (
                         <Controller
                             name="weeksBetween"
                             control={control}
@@ -234,7 +240,7 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
                                 />
                             )}
                         />
-                    )}
+                    )} */}
 
                     {/* {["weeks"].includes(watch("interval")) && (
                         <Controller
@@ -253,26 +259,24 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
                         />
                     )} */}
 
-                    {watch("interval") == "seconds" && (
-                        <Controller
-                            name="secondsBetween"
-                            control={control}
-                            render={({ field, fieldState }) => (
-                                <SuggestiveInput
-                                    label="Seconds Between Trigger"
-                                    type="text"
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                    placeholder="Enter Seconds"
-                                    required
-                                    suggestions={nodessugg}
-                                    error={fieldState.error?.message}
-                                />
-                            )}
-                        />
-                    )}
+                    <Controller
+                        name="durationBetween"
+                        control={control}
+                        render={({ field, fieldState }) => (
+                            <SuggestiveInput
+                                label="Duration Between Trigger"
+                                type="text"
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Enter Duration"
+                                required
+                                suggestions={nodessugg}
+                                error={fieldState.error?.message}
+                            />
+                        )}
+                    />
 
-                    {["months"].includes(watch("interval")) && (
+                    {/* {["months"].includes(watch("interval")) && (
                         <Controller
                             name="monthsBetween"
                             control={control}
@@ -288,7 +292,7 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
                                 />
                             )}
                         />
-                    )}
+                    )} */}
 
                     {/* {["months"].includes(watch("interval")) && (
                         <Controller
@@ -308,7 +312,7 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
                         />
                     )} */}
 
-                    {watch("interval") == "minutes" && (
+                    {/* {watch("interval") == "minutes" && (
                         <Controller
                             name="minutesBetween"
                             control={control}
@@ -324,9 +328,9 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
                                 />
                             )}
                         />
-                    )}
+                    )} */}
 
-                    {watch("interval") == "hours" && (
+                    {/* {watch("interval") == "hours" && (
                         <Controller
                             name="hoursBetween"
                             control={control}
@@ -342,9 +346,9 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
                                 />
                             )}
                         />
-                    )}
+                    )} */}
 
-                    {["days"].includes(watch("interval")) && (
+                    {/* {["days"].includes(watch("interval")) && (
                         <Controller
                             name="daysBetween"
                             control={control}
@@ -360,7 +364,7 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
                                 />
                             )}
                         />
-                    )}
+                    )} */}
 
                     <Controller
                         name="action"
@@ -371,8 +375,8 @@ export const ScheduelModal: React.FC<ConditionModalProps> = ({
                                 placeholder="Please select node"
                                 value={field.value}
                                 onChange={field.onChange}
-                                options={nodeIdName}
-                                // error={fieldState.error}
+                                options={ActionOptions}
+                                error={fieldState?.error?.message}
                             />
                         )}
                     />

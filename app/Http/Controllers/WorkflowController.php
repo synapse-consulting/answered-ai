@@ -56,5 +56,5 @@ class WorkflowController extends Controller
             error('Failed to delete workflow', [], $e);
         }
         return response()->json(['workflow' => $workflow]); 
-    }
+    }    
 }

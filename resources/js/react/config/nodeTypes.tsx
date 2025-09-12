@@ -45,11 +45,11 @@ export const nodeMenuItems: NodeMenuItem[] = [
         type: NODE_TYPES.CONDITION,
     },
     {
-        label: "Schedule Trigger",
-        name: "Schedule",
+        label: "Task",
+        name: "task",
         icon: <FiClock size={20} />,
-        description: "Add Schedule logic",
+        description: "Add task logic",
         color: "#8cfa3e",
-        type: NODE_TYPES.SCHEDULE,
+        type: NODE_TYPES.TASK,
     },
 ];

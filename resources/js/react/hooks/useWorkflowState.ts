@@ -7,12 +7,14 @@ import {
   Edge,
 } from "@xyflow/react";
 import { NodeType, NODE_TYPES } from "../types";
+import { toast } from "sonner";
 
 const initialNodes: NodeType[] = [
   {
     id: "1",
     position: { x: 250, y: 50 },
     type: NODE_TYPES.TRIGGER,
+    deletable: false,
     data: {
       result: null,
       view: {
@@ -36,12 +38,71 @@ export const useWorkflowState = () => {
   const [selectedNode, setSelectedNode] = React.useState<NodeType | null>(null);
   const [isSaved, setIsSaved] = useState(true);
  
-  const onConnect = useCallback(
-    (params: Connection) => {
-      setEdges((eds) => addEdge(params, eds));
-    },
-    [setEdges],
-  );
+ 
+
+  // 🚫 Prevent connecting a node to itself
+//   const onConnect = (connection: Connection) => {
+//   if (connection.source === connection.target) {
+//     return;
+//   }
+
+//   setEdges((eds) => addEdge(connection, eds));
+// };
+
+
+
+  // 🚫 Prevent connecting a node to itself and cycle
+// const onConnect = (connection: Connection) => {
+//   const hasReverse = edges.some(
+//     (e) => e.source === connection.target && e.target === connection.source
+//   );
+
+//   if (hasReverse) {
+//     console.warn("Reverse edge not allowed!");
+//     return; // 🚫 block the connection
+//   }
+
+//   setEdges((eds) => addEdge(connection, eds));
+// };
+
+
+const wouldCreateCycle = (edges: Edge[], connection: Connection) => {
+  const graph: Record<string, string[]> = {};
+
+  edges.forEach((e) => {
+    if (!graph[e.source]) graph[e.source] = [];
+    graph[e.source].push(e.target);
+  });
+
+  // add the new connection temporarily
+  if (!graph[connection.source]) graph[connection.source] = [];
+  graph[connection.source].push(connection.target);
+
+  // DFS to check for a path back to source
+  const visited = new Set<string>();
+  const stack = [connection.target];
+
+  while (stack.length) {
+    const node = stack.pop()!;
+    if (node === connection.source) return true; // cycle found
+    if (!visited.has(node)) {
+      visited.add(node);
+      stack.push(...(graph[node] || []));
+    }
+  }
+
+  return false;
+};
+
+const onConnect = (connection: Connection) => {
+  if (wouldCreateCycle(edges, connection)) {
+    console.warn("Cycle detected, connection blocked!");
+    toast.warning("Cycle detected, connection blocked!")
+    return;
+  }
+  setEdges((eds) => addEdge(connection, eds));
+};
+
 
   const handleNodeClick = useCallback((event: React.MouseEvent, node: any) => {
     const nodeType = node?.data.view.type;

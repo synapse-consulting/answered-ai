@@ -25,6 +25,7 @@ const Sidebar = () => {
     const id = url.searchParams.get("id") || "";
 
     const { data } = useWorkflow(id);
+
     const updateWorkflow = useUpdateWorkflow(id);
 
     const onSave = async () => {

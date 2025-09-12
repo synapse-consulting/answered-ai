@@ -24,7 +24,7 @@ const customNodeTypes: Record<NodeTypes, React.ComponentType<any>> = {
     notification: NotificationNode,
     crm: CustomNode,
     condition: ConditionNode,
-    schedule: ScheduleNode,
+    task: ScheduleNode,
 };
 
 export default function WorkflowBuilder() {
@@ -49,7 +49,14 @@ export default function WorkflowBuilder() {
 
     useEffect(() => {
         if (data?.Workflow?.executable_flow) {
-            setNodes(data.Workflow.executable_flow.nodes || []);
+            setNodes(
+                (data.Workflow.executable_flow.nodes || []).map((node) => ({
+                    ...node,
+                    deletable:
+                        node.deletable ??
+                        (node.type === NODE_TYPES.TRIGGER ? false : true),
+                }))
+            );
             setEdges(data.Workflow.executable_flow.edges || []);
             console.log(data?.Workflow.executable_flow);
         }
@@ -156,7 +163,7 @@ export default function WorkflowBuilder() {
             />
 
             <ScheduelModal
-                isOpen={selectedNode?.type === NODE_TYPES.SCHEDULE}
+                isOpen={selectedNode?.type === NODE_TYPES.TASK}
                 onClose={() => setSelectedNode(null)}
                 nodeId={selectedNode?.id}
             />

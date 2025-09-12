@@ -44,9 +44,10 @@ export const ConditionModal: React.FC<ConditionModalProps> = ({
     onClose,
     nodeId,
 }) => {
-    const { allResults } = useSuggestionData();
+    const { allResults } = useSuggestionData(nodeId ?? "");
+    var nodessugg = getNodeSuggestions(allResults);
+
     const { updateNodeData, getNode } = useReactFlow();
-    const nodessugg = getNodeSuggestions(allResults);
 
     const initialConfig = getNode(nodeId ?? "")?.data as
         | ConditionNodeData

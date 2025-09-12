@@ -18,6 +18,8 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CredentialsModal } from "./CredentialsModal";
 import { SuggestiveTextarea } from "@/react/components/ui/SuggestiveTextarea";
+import { useWorkflow } from "@/react/hooks/useWorkFlow";
+import { useCredential } from "@/react/hooks/useCredentials";
 
 interface NotificationModalProps {
     isOpen: boolean;
@@ -149,59 +151,66 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             onClose();
         }
     };
+    const url = new URL(window.location.href);
+    const id = url.searchParams.get("id") || "";
 
-    useEffect(() => {
-        const getCredentials = async () => {
-            const url = new URL(window.location.href);
-            const id = url.searchParams.get("id");
-            console.log(id);
+    // Getting Company id for credentials
+    const { data } = useWorkflow(id);
+    const company_id = data?.Workflow.company_id || "";
 
-            try {
-                const data = await fetch(`${baseUrl}/api/workflow/${id}`).then(
-                    (res) => res.json()
-                );
-                var company_id = data.Workflow.company_id;
-                console.log(company_id);
-            } catch (error) {
-                console.log("Untitled Workflow");
-            }
+    // Getting All Credentials
+    const { data: allCredetials } = useCredential(String(company_id));
+    const CredOptions =
+        allCredetials?.map((d) => ({
+            value: String(d.id),
+            label: d.name,
+        })) ?? [];
 
-            // Saving the workflow
-            try {
-                const response = await fetch(
-                    `${baseUrl}/api/credentials?company_id=${company_id}`,
-                    {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                    }
-                );
-
-                // setLoading(false);
-                const result = await response.json();
-                if (!response.ok) {
-                    // toast.error(`Failed to save. Status: ${response.status}`);
-                    console.log("credentials:: " + result);
-                } else {
-                    // toast.success("Workflow saved successfully!");
-                    console.log(result);
-                    const options: SelectOption[] = result.credentials.map(
-                        (cred: any) => ({
-                            value: String(cred.id),
-                            label: cred.name,
-                        })
-                    );
-
-                    setCredentialsOptions(options);
-                }
-            } catch (error) {
-                console.error("catch error", error);
-                // toast(`Error saving nodes`);
-            }
-        };
-        getCredentials();
-    }, [showCredentialsModal]);
+    // useEffect(() => {
+    //     const getCredentials = async () => {
+    // try {
+    //     const data = await fetch(`${baseUrl}/api/workflow/${id}`).then(
+    //         (res) => res.json()
+    //     );
+    //     var company_id = data.Workflow.company_id;
+    //     console.log(company_id);
+    // } catch (error) {
+    //     console.log("Untitled Workflow");
+    // }
+    // Saving the workflow
+    // try {
+    //     const response = await fetch(
+    //         `${baseUrl}/api/credentials?company_id=${company_id}`,
+    //         {
+    //             method: "GET",
+    //             headers: {
+    //                 "Content-Type": "application/json",
+    //             },
+    //         }
+    //     );
+    //     // setLoading(false);
+    //     const result = await response.json();
+    //     if (!response.ok) {
+    //         // toast.error(`Failed to save. Status: ${response.status}`);
+    //         console.log("credentials:: " + result);
+    //     } else {
+    //         // toast.success("Workflow saved successfully!");
+    //         console.log(result);
+    //         const options: SelectOption[] = result.credentials.map(
+    //             (cred: any) => ({
+    //                 value: String(cred.id),
+    //                 label: cred.name,
+    //             })
+    //         );
+    //         setCredentialsOptions(options);
+    //     }
+    // } catch (error) {
+    //     console.error("catch error", error);
+    //     // toast(`Error saving nodes`);
+    // }
+    //     };
+    //     getCredentials();
+    // }, [showCredentialsModal]);
 
     const typeOptions = [
         { value: "smtp", label: "SMTP" },
@@ -209,10 +218,8 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         { value: "sms", label: "SMS" },
         { value: "webhook", label: "Webhook" },
     ];
-
-    const { allResults } = useSuggestionData();
-
-    const nodessugg = getNodeSuggestions(allResults);
+    const { allResults } = useSuggestionData(nodeId ?? "");
+    var nodessugg = getNodeSuggestions(allResults);
 
     const onError = (errors: any) => {
         console.log("❌ Validation errors:", errors);
@@ -228,6 +235,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             <CredentialsModal
                 isOpen={showCredentialsModal}
                 onClose={() => setShowCredentialsModal(false)}
+                nodeId={nodeId}
             />
             <form onSubmit={handleSubmit(handleSave, onError)}>
                 <div className="space-y-6">
@@ -288,7 +296,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                                         // onChange={(val) => field.onChange(val)}
                                         onChange={field.onChange}
                                         // onChange={field.onChange}
-                                        options={credentialsOptions}
+                                        options={CredOptions}
                                         required
                                     />
                                     <button

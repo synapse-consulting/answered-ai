@@ -6,7 +6,7 @@ const baseUrl =
 export async function apiClient<T>(endPoint:string, options: RequestInit = {}): Promise<T> {
     const res = await fetch(`${baseUrl}${endPoint}`,{
         headers:{
-            "Content-Type": "application/json",
+            "Content-Type": "application/json"
         },
         ...options,
     });

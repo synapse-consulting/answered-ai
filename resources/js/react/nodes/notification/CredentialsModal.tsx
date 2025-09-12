@@ -1,23 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import DialogContainer from "../../components/DialogContainer";
-import { FormField } from "../../components/ui/FormField";
 import { SelectField } from "../../components/ui/SelectField";
-// import { TextareaField } from "../../components/ui/TextareaField";
-import { CheckboxField } from "../../components/ui/CheckboxField";
-import { KeyValueEditor } from "../../components/ui/KeyValueEditor";
 import { CredentialConfig, CredentialConfigSchema } from "../../types";
-import { useReactFlow } from "@xyflow/react";
 import { SuggestiveInput } from "@/react/components/ui/SuggestiveInput";
 import { getNodeSuggestions } from "../../utils/jsonTraverser";
 import useSuggestionData from "../hooks/useSuggestionData";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useWorkflow } from "@/react/hooks/useWorkFlow";
 
 interface CredentialModalProps {
     isOpen: boolean;
     onClose: () => void;
+    nodeId?: string;
 }
 const defaultValues: CredentialConfig = {
     type: "smtp",
@@ -34,13 +30,13 @@ const defaultValues: CredentialConfig = {
 export const CredentialsModal: React.FC<CredentialModalProps> = ({
     isOpen,
     onClose,
+    nodeId,
 }) => {
     const {
         control,
         handleSubmit,
         formState: { errors, isValid },
         reset,
-        watch,
     } = useForm<CredentialConfig>({
         resolver: zodResolver(CredentialConfigSchema),
         defaultValues: { ...defaultValues },
@@ -53,18 +49,21 @@ export const CredentialsModal: React.FC<CredentialModalProps> = ({
             .querySelector('meta[name="app-url"]')
             ?.getAttribute("content") || "";
 
-    const handleSave = async (data: CredentialConfig) => {
-        const url = new URL(window.location.href);
-        const id = url.searchParams.get("id");
+    const url = new URL(window.location.href);
+    const id = url.searchParams.get("id") || "";
 
-        try {
-            const data = await fetch(`${baseUrl}/api/workflow/${id}`).then(
-                (res) => res.json()
-            );
-            var company_id = data.Workflow.company_id;
-        } catch (error) {
-            console.log("Untitled Workflow");
-        }
+    const { data } = useWorkflow(id);
+    const company_id = data?.Workflow.company_id;
+
+    const handleSave = async (data: CredentialConfig) => {
+        // try {
+        //     const data = await fetch(`${baseUrl}/api/workflow/${id}`).then(
+        //         (res) => res.json()
+        //     );
+        //     var company_id = data.Workflow.company_id;
+        // } catch (error) {
+        //     console.log("Untitled Workflow");
+        // }
 
         // Saving the workflow
         try {
@@ -85,6 +84,7 @@ export const CredentialsModal: React.FC<CredentialModalProps> = ({
             if (!response.ok) {
                 toast.error(`Failed to save. Status: ${response.status}`);
             } else {
+                toast.success("Credentials added succesfully");
                 reset();
                 onClose();
             }
@@ -101,7 +101,7 @@ export const CredentialsModal: React.FC<CredentialModalProps> = ({
         { value: "webhook", label: "Webhook" },
     ];
 
-    const { allResults } = useSuggestionData();
+    const { allResults } = useSuggestionData(nodeId ?? "");
     const nodessugg = getNodeSuggestions(allResults);
 
     return (
@@ -118,7 +118,7 @@ export const CredentialsModal: React.FC<CredentialModalProps> = ({
                         name="name"
                         control={control}
                         render={({ field }) => (
-                            <FormField
+                            <SuggestiveInput
                                 label="Credientials Name"
                                 value={field.value}
                                 onChange={field.onChange}
@@ -126,7 +126,7 @@ export const CredentialsModal: React.FC<CredentialModalProps> = ({
                                 type="text"
                                 required
                                 error={errors.name?.message}
-                                // error={error
+                                suggestions={nodessugg}
                             />
                         )}
                     />

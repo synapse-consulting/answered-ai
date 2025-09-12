@@ -28,7 +28,7 @@ export const KeyValuePairSchema = z.object({
   value: z.string()
 })
 
-export type NodeTypes = 'trigger' | 'httpRequest' | 'notification' | 'crm' | 'condition' | 'schedule';
+export type NodeTypes = 'trigger' | 'httpRequest' | 'notification' | 'crm' | 'condition' | 'task';
 
 export interface NodeType extends Node<BaseNodeData<RecordUnknown>, NodeTypes> {}
 
@@ -168,83 +168,83 @@ export type ConditionConfig = z.infer<typeof conditionConfigSchema>;
 //   // timezone: z.string().min(1, "Timezone is required"),
 // })
 
-export const ScheduelConfigSchema = z.discriminatedUnion("interval", [
-  // SECONDS
-  z.object({
-    interval: z.literal("seconds"),
+export const ScheduelConfigSchema = z.object({
+  
+    interval: z.enum(["seconds", "minutes", "hours", "days", "weeks", "months"]),
     action: z.string().min(1, "Action is required"),
-    dateTime: z.string(),
+    initialDate : z.string(),
     isRecuring: z.boolean(),
-    secondsBetween: z.string().min(1, "Seconds are required"),
-  }),
+   durationBetween: z.string().min(1, "Duration is required"),
 
+});
+export type ScheduelConfig = z.infer<typeof ScheduelConfigSchema>
   // MINUTES
-  z.object({
-    interval: z.literal("minutes"),
-    isRecuring: z.boolean(),
-    dateTime: z.string(),
-    action: z.string().min(1, "Action is required"),
-    minutesBetween: z.string().min(1, "Minutes are required"),
-  }),
+  // z.object({
+  //   interval: z.literal("minutes"),
+  //   isRecuring: z.boolean(),
+  //   initialDate : z.string(),
+  //   action: z.string().min(1, "Action is required"),
+  //   minutesBetween: z.string().min(1, "Minutes are required"),
+  // }),
 
   // HOURS
-  z.object({
-    interval: z.literal("hours"),
-    dateTime: z.string(),
-    isRecuring: z.boolean(),
+  // z.object({
+  //   interval: z.literal("hours"),
+  //   initialDate : z.string(),
+  //   isRecuring: z.boolean(),
 
-    action: z.string().min(1, "Action is required"),
-    hoursBetween: z.string().min(1, "Hours are required"),
-    // triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
-  }),
+  //   action: z.string().min(1, "Action is required"),
+  //   hoursBetween: z.string().min(1, "Hours are required"),
+  //   // triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
+  // }),
 
-  // DAYS
-  z.object({
-    interval: z.literal("days"),
-    dateTime: z.string(),
-    isRecuring: z.boolean(),
+  // // DAYS
+  // z.object({
+  //   interval: z.literal("days"),
+  //   initialDate : z.string(),
+  //   isRecuring: z.boolean(),
 
-    action: z.string().min(1, "Action is required"),
-    daysBetween: z.string().min(1, "Days are required"),
-    // triggerAtHour: z.enum([
-    //   "1am","2am","3am","4am","5am","6am","7am","8am","9am"
-    // ]),
-    // triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
-  }),
+  //   action: z.string().min(1, "Action is required"),
+  //   daysBetween: z.string().min(1, "Days are required"),
+  //   // triggerAtHour: z.enum([
+  //   //   "1am","2am","3am","4am","5am","6am","7am","8am","9am"
+  //   // ]),
+  //   // triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
+  // }),
 
-  // WEEKS
-  z.object({
-    interval: z.literal("weeks"),
-    dateTime: z.string(),
-    isRecuring: z.boolean(),
-    action: z.string().min(1, "Action is required"),
-    weeksBetween: z.string().min(1, "Weeks are required"),
-    // triggerAtDay: z.enum([
-    //   "monday","tuesday","wedneday","thursday","friday","saturday","sunday"
-    // ]),
-    // triggerAtHour: z.enum([
-    //   "1am","2am","3am","4am","5am","6am","7am","8am","9am"
-    // ]),
-    // triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
-  }),
+  // // WEEKS
+  // z.object({
+  //   interval: z.literal("weeks"),
+  //   initialDate : z.string(),
+  //   isRecuring: z.boolean(),
+  //   action: z.string().min(1, "Action is required"),
+  //   weeksBetween: z.string().min(1, "Weeks are required"),
+  //   // triggerAtDay: z.enum([
+  //   //   "monday","tuesday","wedneday","thursday","friday","saturday","sunday"
+  //   // ]),
+  //   // triggerAtHour: z.enum([
+  //   //   "1am","2am","3am","4am","5am","6am","7am","8am","9am"
+  //   // ]),
+  //   // triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
+  // }),
 
-  // MONTHS
-  z.object({
-    interval: z.literal("months"),
-    dateTime: z.string(),
-    isRecuring: z.boolean(),
-    action: z.string().min(1, "Action is required"),
-    monthsBetween: z.string().min(1, "Months are required"),
-    // triggerAtDate: z.string().min(1, "Date is required"),
-    // triggerAtHour: z.enum([
-    //   "1am","2am","3am","4am","5am","6am","7am","8am","9am"
-    // ]),
-    // triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
-  }),
-]);
+  // // MONTHS
+  // z.object({
+  //   interval: z.literal("months"),
+  //   initialDate : z.string(),
+  //   isRecuring: z.boolean(),
+  //   action: z.string().min(1, "Action is required"),
+  //   monthsBetween: z.string().min(1, "Months are required"),
+  //   // triggerAtDate: z.string().min(1, "Date is required"),
+  //   // triggerAtHour: z.enum([
+  //   //   "1am","2am","3am","4am","5am","6am","7am","8am","9am"
+  //   // ]),
+  //   // triggerAtMinute: z.string().min(1, "Trigger at minute is required"),
+  // }),
 
 
-export type ScheduelConfig = z.infer<typeof ScheduelConfigSchema>
+
+
 
 export interface ScheduelNodeData extends BaseNodeData<ScheduelConfig> {}
 
@@ -283,7 +283,7 @@ export const NODE_TYPES = {
   NOTIFICATION: 'notification' as const,
   CRM: 'crm' as const,
   CONDITION: 'condition' as const,
-  SCHEDULE: 'schedule' as const,
+  TASK: 'task' as const,
 } as const;
 
 export const HTTP_METHODS = {

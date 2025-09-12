@@ -1,9 +1,10 @@
-import { getWorkFlowByID, updateWorkFlow } from "../api/workflow"
+import { getWorkFlowByID, updateWorkFlow, getAllWorkflow } from "../api/workflow"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 interface WorkflowResponse {
   Workflow: {
     id: number;
+    company_id: number;
     name: string;
     description: string;
     executable_flow: {
@@ -14,6 +15,11 @@ interface WorkflowResponse {
 }
 
 
+interface Workflow  {
+  id: number;
+  name: string;
+};
+
 export const useWorkflow = (id: string) => {
     return useQuery<WorkflowResponse>({
         queryKey: ["workflow", id],
@@ -23,9 +29,15 @@ export const useWorkflow = (id: string) => {
     })
 }
 
+export const useAllWorkflows = () => {
+  return useQuery<Workflow[]>({
+    queryKey: ['workflows'],
+    queryFn: () => getAllWorkflow(),
+  })
+}
+
 export function useUpdateWorkflow(id: string){
     const queryClient = useQueryClient();
-
 
     return useMutation({
         mutationFn: (data: {

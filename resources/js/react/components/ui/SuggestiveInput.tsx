@@ -4,7 +4,7 @@ import { FormField } from "./FormField";
 
 interface SuggestiveInputProps {
     label: string;
-    value: string;
+    value: string | number;
     onChange: (value: string) => void;
     placeholder?: string;
     type?: "text" | "password" | "email" | "url";
